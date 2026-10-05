@@ -1,0 +1,27 @@
+timo:
+  navigation:
+    myHistory: My matches
+    more: More tools
+  selection:
+    title: Champion select
+    hint: Click a champion to select or swap
+    current: Current champion
+    waiting: Waiting for a champion
+    buffs: Buffs
+    debuffs: Nerfs
+    noChanges: No adjustments
+    noBalance: No independent balance data for this mode
+    source: 'Source: {{source}}'
+    failed: 'Could not switch champion: {{reason}}'
+    ownedSkins: Available skins
+    skinCount_one: '{{count}} available skin'
+    skinCount_other: '{{count}} available skins'
+    noSkins: No available skins
+    skinLoading: Loading available skins
+    skinLoadFailed: Could not load skins. Refresh to retry
+    skinDisabled: Skins cannot be changed in this phase
+    skinFailed: Could not change skin
+    refresh: Refresh
+  match:
+    title: Match overview
+    hint: Click a player for their history or a match for details

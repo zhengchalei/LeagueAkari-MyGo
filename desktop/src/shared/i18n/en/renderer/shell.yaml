@@ -1,0 +1,105 @@
+announcements:
+  modal:
+    title: Announcement
+    close: Close
+    read: I have read
+    noAnnouncementMd: |
+      ***No announcement***
+
+      or check [GitHub](https://github.com/LeagueAkari/LeagueAkari-Config/tree/main/announcement)
+legal:
+  declaration:
+    title: Declaration
+    isFree: is free
+    ok: I acknowledge this software {isFree} and agree to the disclaimer
+    quit: Quit
+    newContent: |
+      # LeagueAkari-MyGo
+
+      LeagueAkari-MyGo is a League of Legends match-history and champion-selection assistant for Tencent servers, built from League Akari under the MIT license.
+
+      It connects to the signed-in League Client and reads match history and owned skins. Automatic actions are controlled in settings and disabled by default.
+
+      Client and server APIs may change. Credentials stay in memory and authentication tokens are excluded from logs.
+
+      The upstream copyright and license are included in LICENSE and THIRD_PARTY_NOTICES.md.
+titlebar:
+  actions:
+    announcement: Announcement
+    announcementSummary: Announcement Summary
+    announcementOk: Got it
+    announcementSeeMore: See More
+    github: Project GitHub
+    auxWindow: Auxiliary Window
+    opggWindow: OP.GG
+    backgroundTasks: Background Tasks
+    themeSelector:
+      title: Theme Palette
+      groups:
+        system: System
+        brightBuiltin: Light
+        darkBuiltin: Dark
+      tone:
+        light: Light
+        dark: Dark
+      presets:
+        followSystem: Follow System
+        light: Light
+        dark: Dark
+        graphite: Graphite Blue
+        cyber: Cyber Neon
+        sakura: Sakura Pink
+        mint: Mint Green
+        aurora: Aurora Violet
+        butter: Butter Yellow
+    toggleTheme:
+      toLight: Switch to Light
+      toDark: Switch to Dark
+  windowControls:
+    minimize: Minimize
+    maximize: Maximize
+    restore: Restore
+    close: Close
+window:
+  closeConfirm:
+    title: Quit $t(common:appName)
+    options:
+      minimize-to-tray: Minimize to tray
+      quit: Quit
+    remember: Remember
+    ok: OK
+    cancel: Cancel
+navigation:
+  sidebar:
+    menu:
+      match-history: Match History
+      ongoing-game: Ongoing Game
+      automation: Automation
+      toolkit: Toolkit
+      test: Test
+    status:
+      respawned: Respawned
+      respawnedContent: You have respawned in the game, have fun!
+      currentConnected: Connected
+      launchedClients: Launched Clients
+      noClientTitle: No Available Client
+      noClient: No available client, please start the game
+      settings: Settings
+      notConnected: Not Connected
+      inConnectionLoop: Connecting...
+      unknown: Unknown
+      connectedClient: Connected Client
+      launchedClientPlaceholder: Launched Client {{index}}
+      respawnTimer:
+        timeLeft: Respawn in {{seconds}} s
+startup:
+  launcher:
+    tcls: TCLS Client
+    weGame: WeGame
+    riotClient: Riot Client
+    successMessage: 'Successfully launched: {{name}}'
+    failedMessage: 'Failed to launch {{name}}: {{reason}}'
+    newVersionAvailable: New
+backgroundTasks:
+  taskTitle: Ongoing Tasks ({{count}})
+  emptyPlaceholder: No background tasks

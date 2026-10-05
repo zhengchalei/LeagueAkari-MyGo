@@ -1,0 +1,47 @@
+{
+  "name": "league-akari-native-win32",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Internal Windows native bindings for League Akari",
+  "os": [
+    "win32"
+  ],
+  "cpu": [
+    "x64"
+  ],
+  "types": "dist/index.d.ts",
+  "main": "dist/index.js",
+  "files": [
+    "addons/*.node",
+    "dist/**/*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./input": {
+      "types": "./dist/input/index.d.ts",
+      "require": "./dist/input/index.js",
+      "default": "./dist/input/index.js"
+    },
+    "./tools": {
+      "types": "./dist/tools/index.d.ts",
+      "require": "./dist/tools/index.js",
+      "default": "./dist/tools/index.js"
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.js"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Hanxven",
+    "email": "hanxven@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "node-addon-api": "^8.9.0"
+  }
+}

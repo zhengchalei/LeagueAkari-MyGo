@@ -1,0 +1,829 @@
+{
+  "server": "艾欧尼亚",
+  "heroes": [
+    {
+      "id": 103,
+      "selectable": true,
+      "name": "阿狸",
+      "imagePath": "/assets/champions/103.jpg"
+    },
+    {
+      "id": 127,
+      "selectable": true,
+      "name": "丽桑卓",
+      "imagePath": "/assets/champions/127.jpg"
+    },
+    {
+      "id": 711,
+      "selectable": true,
+      "name": "薇古丝",
+      "imagePath": "/assets/champions/711.jpg"
+    }
+  ],
+  "stage": "select",
+  "connected": false,
+  "playerName": "Timo",
+  "skinLists": {
+    "103": [
+      {
+        "id": 103000,
+        "name": "经典 阿狸",
+        "imagePath": "/assets/skins/103000.jpg"
+      },
+      {
+        "id": 103014,
+        "name": "星之守护者 阿狸",
+        "imagePath": "/assets/skins/103014.jpg"
+      },
+      {
+        "id": 103027,
+        "name": "灵魂莲华 阿狸",
+        "imagePath": "/assets/skins/103027.jpg"
+      }
+    ],
+    "127": [
+      {
+        "id": 127000,
+        "name": "经典 丽桑卓",
+        "imagePath": "/assets/skins/127000.jpg"
+      },
+      {
+        "id": 127003,
+        "name": "源代码 丽桑卓",
+        "imagePath": "/assets/skins/127003.jpg"
+      },
+      {
+        "id": 127004,
+        "name": "魔女 丽桑卓",
+        "imagePath": "/assets/skins/127004.jpg"
+      }
+    ],
+    "711": [
+      {
+        "id": 711000,
+        "name": "经典 薇古丝",
+        "imagePath": "/assets/skins/711000.jpg"
+      },
+      {
+        "id": 711001,
+        "name": "黎明使者 薇古丝",
+        "imagePath": "/assets/skins/711001.jpg"
+      },
+      {
+        "id": 711010,
+        "name": "至高天 薇古丝",
+        "imagePath": "/assets/skins/711010.jpg"
+      }
+    ]
+  },
+  "currentChampionId": 103,
+  "selectedSkinId": 103000,
+  "teammates": [
+    {
+      "id": "1",
+      "name": "晚风#1024",
+      "championId": 127,
+      "championName": "丽桑卓",
+      "history": {
+        "status": "ready",
+        "source": "演示",
+        "matches": [
+          {
+            "id": 100,
+            "championId": 127,
+            "championName": "丽桑卓",
+            "win": true,
+            "kills": 6,
+            "deaths": 2,
+            "assists": 12,
+            "duration": 960,
+            "timestamp": 1791181383994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 101,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": false,
+            "kills": 4,
+            "deaths": 7,
+            "assists": 13,
+            "duration": 1000,
+            "timestamp": 1791177783994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 102,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": true,
+            "kills": 8,
+            "deaths": 4,
+            "assists": 14,
+            "duration": 1040,
+            "timestamp": 1791174183994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 103,
+            "championId": 127,
+            "championName": "丽桑卓",
+            "win": true,
+            "kills": 9,
+            "deaths": 2,
+            "assists": 15,
+            "duration": 1080,
+            "timestamp": 1791170583994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 104,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": false,
+            "kills": 4,
+            "deaths": 7,
+            "assists": 16,
+            "duration": 1120,
+            "timestamp": 1791166983994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 105,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": true,
+            "kills": 7,
+            "deaths": 4,
+            "assists": 17,
+            "duration": 1160,
+            "timestamp": 1791163383994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 106,
+            "championId": 127,
+            "championName": "丽桑卓",
+            "win": false,
+            "kills": 3,
+            "deaths": 6,
+            "assists": 18,
+            "duration": 1200,
+            "timestamp": 1791159783994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 107,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 9,
+            "deaths": 3,
+            "assists": 19,
+            "duration": 1240,
+            "timestamp": 1791156183994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 108,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": true,
+            "kills": 6,
+            "deaths": 4,
+            "assists": 12,
+            "duration": 1280,
+            "timestamp": 1791152583994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 109,
+            "championId": 127,
+            "championName": "丽桑卓",
+            "win": false,
+            "kills": 3,
+            "deaths": 6,
+            "assists": 13,
+            "duration": 1320,
+            "timestamp": 1791148983994,
+            "mode": "ARAM",
+            "queueId": 450
+          }
+        ],
+        "count": 10,
+        "wins": 6,
+        "losses": 4,
+        "kda": "4.6"
+      }
+    },
+    {
+      "id": "2",
+      "name": "一起推塔#7788",
+      "championId": 711,
+      "championName": "薇古丝",
+      "history": {
+        "status": "ready",
+        "source": "演示",
+        "matches": [
+          {
+            "id": 200,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 3,
+            "deaths": 6,
+            "assists": 12,
+            "duration": 960,
+            "timestamp": 1791181383994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 201,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 7,
+            "deaths": 3,
+            "assists": 13,
+            "duration": 1000,
+            "timestamp": 1791177783994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 202,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": true,
+            "kills": 8,
+            "deaths": 4,
+            "assists": 14,
+            "duration": 1040,
+            "timestamp": 1791174183994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 203,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 3,
+            "deaths": 6,
+            "assists": 15,
+            "duration": 1080,
+            "timestamp": 1791170583994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 204,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 6,
+            "deaths": 3,
+            "assists": 16,
+            "duration": 1120,
+            "timestamp": 1791166983994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 205,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 5,
+            "deaths": 8,
+            "assists": 17,
+            "duration": 1160,
+            "timestamp": 1791163383994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 206,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 3,
+            "deaths": 6,
+            "assists": 18,
+            "duration": 1200,
+            "timestamp": 1791159783994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 207,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 9,
+            "deaths": 3,
+            "assists": 19,
+            "duration": 1240,
+            "timestamp": 1791156183994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 208,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 5,
+            "deaths": 8,
+            "assists": 12,
+            "duration": 1280,
+            "timestamp": 1791152583994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 209,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": true,
+            "kills": 7,
+            "deaths": 2,
+            "assists": 13,
+            "duration": 1320,
+            "timestamp": 1791148983994,
+            "mode": "ARAM",
+            "queueId": 450
+          }
+        ],
+        "count": 10,
+        "wins": 5,
+        "losses": 5,
+        "kda": "4.2"
+      }
+    },
+    {
+      "id": "3",
+      "name": "今晚不熬夜#2333",
+      "championId": 103,
+      "championName": "阿狸",
+      "history": {
+        "status": "ready",
+        "source": "演示",
+        "matches": [
+          {
+            "id": 300,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 6,
+            "deaths": 2,
+            "assists": 12,
+            "duration": 960,
+            "timestamp": 1791181383994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 301,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 7,
+            "deaths": 3,
+            "assists": 13,
+            "duration": 1000,
+            "timestamp": 1791177783994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 302,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 5,
+            "deaths": 8,
+            "assists": 14,
+            "duration": 1040,
+            "timestamp": 1791174183994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 303,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 9,
+            "deaths": 2,
+            "assists": 15,
+            "duration": 1080,
+            "timestamp": 1791170583994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 304,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 6,
+            "deaths": 3,
+            "assists": 16,
+            "duration": 1120,
+            "timestamp": 1791166983994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 305,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 5,
+            "deaths": 8,
+            "assists": 17,
+            "duration": 1160,
+            "timestamp": 1791163383994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 306,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 8,
+            "deaths": 2,
+            "assists": 18,
+            "duration": 1200,
+            "timestamp": 1791159783994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 307,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 9,
+            "deaths": 3,
+            "assists": 19,
+            "duration": 1240,
+            "timestamp": 1791156183994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 308,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 5,
+            "deaths": 8,
+            "assists": 12,
+            "duration": 1280,
+            "timestamp": 1791152583994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 309,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 7,
+            "deaths": 2,
+            "assists": 13,
+            "duration": 1320,
+            "timestamp": 1791148983994,
+            "mode": "ARAM",
+            "queueId": 450
+          }
+        ],
+        "count": 10,
+        "wins": 7,
+        "losses": 3,
+        "kda": "5.3"
+      }
+    },
+    {
+      "id": "4",
+      "name": "小熊软糖#5566",
+      "championId": 127,
+      "championName": "丽桑卓",
+      "history": {
+        "status": "ready",
+        "source": "演示",
+        "matches": [
+          {
+            "id": 400,
+            "championId": 127,
+            "championName": "丽桑卓",
+            "win": false,
+            "kills": 3,
+            "deaths": 6,
+            "assists": 12,
+            "duration": 960,
+            "timestamp": 1791181383994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 401,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": true,
+            "kills": 7,
+            "deaths": 3,
+            "assists": 13,
+            "duration": 1000,
+            "timestamp": 1791177783994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 402,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 5,
+            "deaths": 8,
+            "assists": 14,
+            "duration": 1040,
+            "timestamp": 1791174183994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 403,
+            "championId": 127,
+            "championName": "丽桑卓",
+            "win": true,
+            "kills": 9,
+            "deaths": 2,
+            "assists": 15,
+            "duration": 1080,
+            "timestamp": 1791170583994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 404,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": false,
+            "kills": 4,
+            "deaths": 7,
+            "assists": 16,
+            "duration": 1120,
+            "timestamp": 1791166983994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 405,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": false,
+            "kills": 5,
+            "deaths": 8,
+            "assists": 17,
+            "duration": 1160,
+            "timestamp": 1791163383994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 406,
+            "championId": 127,
+            "championName": "丽桑卓",
+            "win": true,
+            "kills": 8,
+            "deaths": 2,
+            "assists": 18,
+            "duration": 1200,
+            "timestamp": 1791159783994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 407,
+            "championId": 103,
+            "championName": "阿狸",
+            "win": false,
+            "kills": 4,
+            "deaths": 7,
+            "assists": 19,
+            "duration": 1240,
+            "timestamp": 1791156183994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 408,
+            "championId": 711,
+            "championName": "薇古丝",
+            "win": true,
+            "kills": 6,
+            "deaths": 4,
+            "assists": 12,
+            "duration": 1280,
+            "timestamp": 1791152583994,
+            "mode": "ARAM",
+            "queueId": 450
+          },
+          {
+            "id": 409,
+            "championId": 127,
+            "championName": "丽桑卓",
+            "win": false,
+            "kills": 3,
+            "deaths": 6,
+            "assists": 13,
+            "duration": 1320,
+            "timestamp": 1791148983994,
+            "mode": "ARAM",
+            "queueId": 450
+          }
+        ],
+        "count": 10,
+        "wins": 4,
+        "losses": 6,
+        "kda": "3.8"
+      }
+    }
+  ],
+  "skins": [
+    {
+      "id": 103000,
+      "name": "经典 阿狸",
+      "imagePath": "/assets/skins/103000.jpg"
+    },
+    {
+      "id": 103014,
+      "name": "星之守护者 阿狸",
+      "imagePath": "/assets/skins/103014.jpg"
+    },
+    {
+      "id": 103027,
+      "name": "灵魂莲华 阿狸",
+      "imagePath": "/assets/skins/103027.jpg"
+    }
+  ],
+  "self": {
+    "name": "Timo#1024",
+    "summonerLevel": 168,
+    "championId": 103,
+    "history": {
+      "status": "ready",
+      "source": "演示",
+      "matches": [
+        {
+          "id": 100,
+          "championId": 127,
+          "championName": "丽桑卓",
+          "win": true,
+          "kills": 6,
+          "deaths": 2,
+          "assists": 12,
+          "duration": 960,
+          "timestamp": 1791181383994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 101,
+          "championId": 103,
+          "championName": "阿狸",
+          "win": false,
+          "kills": 4,
+          "deaths": 7,
+          "assists": 13,
+          "duration": 1000,
+          "timestamp": 1791177783994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 102,
+          "championId": 711,
+          "championName": "薇古丝",
+          "win": true,
+          "kills": 8,
+          "deaths": 4,
+          "assists": 14,
+          "duration": 1040,
+          "timestamp": 1791174183994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 103,
+          "championId": 127,
+          "championName": "丽桑卓",
+          "win": true,
+          "kills": 9,
+          "deaths": 2,
+          "assists": 15,
+          "duration": 1080,
+          "timestamp": 1791170583994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 104,
+          "championId": 103,
+          "championName": "阿狸",
+          "win": false,
+          "kills": 4,
+          "deaths": 7,
+          "assists": 16,
+          "duration": 1120,
+          "timestamp": 1791166983994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 105,
+          "championId": 711,
+          "championName": "薇古丝",
+          "win": true,
+          "kills": 7,
+          "deaths": 4,
+          "assists": 17,
+          "duration": 1160,
+          "timestamp": 1791163383994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 106,
+          "championId": 127,
+          "championName": "丽桑卓",
+          "win": false,
+          "kills": 3,
+          "deaths": 6,
+          "assists": 18,
+          "duration": 1200,
+          "timestamp": 1791159783994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 107,
+          "championId": 103,
+          "championName": "阿狸",
+          "win": true,
+          "kills": 9,
+          "deaths": 3,
+          "assists": 19,
+          "duration": 1240,
+          "timestamp": 1791156183994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 108,
+          "championId": 711,
+          "championName": "薇古丝",
+          "win": true,
+          "kills": 6,
+          "deaths": 4,
+          "assists": 12,
+          "duration": 1280,
+          "timestamp": 1791152583994,
+          "mode": "ARAM",
+          "queueId": 450
+        },
+        {
+          "id": 109,
+          "championId": 127,
+          "championName": "丽桑卓",
+          "win": false,
+          "kills": 3,
+          "deaths": 6,
+          "assists": 13,
+          "duration": 1320,
+          "timestamp": 1791148983994,
+          "mode": "ARAM",
+          "queueId": 450
+        }
+      ],
+      "count": 10,
+      "wins": 6,
+      "losses": 4,
+      "kda": "4.6"
+    }
+  }
+}

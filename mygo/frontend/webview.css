@@ -1,0 +1,26 @@
+/* MyGo/WebView2 uses its own inherited titlebar drag marker. */
+.main-window-titlebar,
+.app-titlebar,
+.titlebar,
+.sidebar-header,
+.app-sidebar__head {
+  --app-region: drag;
+}
+
+.app-titlebar .player-tabs-title .n-scrollbar-container {
+  --app-region: drag;
+}
+
+button,
+input,
+select,
+[role="button"],
+.n-button,
+.n-input,
+.n-select,
+.n-tabs,
+.player-tabs-title .tab,
+.player-tabs-title .search-area,
+.player-tabs-title .n-scrollbar-rail {
+  --app-region: no-drag;
+}

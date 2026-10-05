@@ -1,0 +1,35 @@
+.shadow-win {
+  background-color: rgba(96, 165, 250, 0.35);
+}
+
+.shadow-loss {
+  background-color: rgba(239, 68, 68, 0.3);
+}
+
+.shadow-remake {
+  background-color: rgba(168, 168, 168, 0.24);
+}
+
+[data-theme='dark'] .shadow-win {
+  background-color: rgba(37, 99, 235, 0.16);
+}
+
+[data-theme='dark'] .shadow-loss {
+  background-color: rgba(190, 18, 60, 0.16);
+}
+
+[data-theme='dark'] .shadow-remake {
+  background-color: rgba(148, 163, 184, 0.12);
+}
+
+[data-theme-id]:not([data-theme-id='light']):not([data-theme-id='dark']) .shadow-win {
+  background-color: var(--la-match-win-solid);
+}
+
+[data-theme-id]:not([data-theme-id='light']):not([data-theme-id='dark']) .shadow-loss {
+  background-color: var(--la-match-loss-solid);
+}
+
+[data-theme-id]:not([data-theme-id='light']):not([data-theme-id='dark']) .shadow-remake {
+  background-color: var(--la-match-neutral-solid);
+}

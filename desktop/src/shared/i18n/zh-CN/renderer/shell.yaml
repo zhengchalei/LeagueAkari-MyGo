@@ -1,0 +1,105 @@
+announcements:
+  modal:
+    title: 公告
+    close: 关闭
+    read: 已读
+    noAnnouncementMd: |
+      ***暂无公告***
+
+      或查询 [GitHub](https://github.com/LeagueAkari/LeagueAkari-Config/tree/main/announcement)
+legal:
+  declaration:
+    title: 声明
+    isFree: 为免费软件
+    ok: 我已知晓此软件{isFree}并已认同免责条款
+    quit: 退出
+    newContent: |
+      # LeagueAkari-MyGo 使用说明
+
+      LeagueAkari-MyGo 是面向国服的 LOL 战绩与选人助手，基于 League Akari 的 MIT 开源代码构建。
+
+      登录 LOL 客户端后自动连接，读取战绩和已拥有皮肤。自动操作均由设置控制，默认关闭。
+
+      客户端和服务器接口会随版本变化。凭据仅在运行内存中使用，日志不记录认证 token。
+
+      原项目版权和许可保留在随软件提供的 LICENSE 与 THIRD_PARTY_NOTICES.md 中。
+titlebar:
+  actions:
+    announcement: 公告
+    announcementSummary: 公告摘要
+    announcementOk: 确认
+    announcementSeeMore: 查看详情
+    github: 项目主页
+    auxWindow: 小窗口
+    opggWindow: OP.GG
+    backgroundTasks: 后台任务
+    themeSelector:
+      title: 主题配色
+      groups:
+        system: 系统
+        brightBuiltin: 亮色
+        darkBuiltin: 暗色
+      tone:
+        light: 亮
+        dark: 暗
+      presets:
+        followSystem: 跟随系统
+        light: 亮色
+        dark: 暗色
+        graphite: 石墨青蓝
+        cyber: 赛博荧光
+        sakura: 樱花粉
+        mint: 薄荷绿
+        aurora: 极光紫
+        butter: 奶油黄
+    toggleTheme:
+      toLight: 切换至亮色
+      toDark: 切换至暗色
+  windowControls:
+    minimize: 最小化
+    maximize: 最大化
+    restore: 还原
+    close: 关闭
+window:
+  closeConfirm:
+    title: 退出 $t(common:appName)
+    options:
+      minimize-to-tray: 最小化到托盘区
+      quit: 退出应用
+    remember: 记住选择
+    ok: 确定
+    cancel: 取消
+navigation:
+  sidebar:
+    menu:
+      match-history: 战绩
+      ongoing-game: 对局
+      automation: 自动操作
+      toolkit: 工具集
+      test: 测试
+    status:
+      respawned: 已复活
+      respawnedContent: 你在游戏内已复活，祝你游戏愉快！
+      currentConnected: 当前已连接
+      launchedClients: 已启动的客户端
+      launchedClientPlaceholder: 已启动的客户端 {{index}}
+      noClientTitle: 无可用客户端
+      noClient: 当前无可用客户端，请启动游戏
+      settings: 设置
+      notConnected: 未连接
+      unknown: 未知
+      inConnectionLoop: 连接中...
+      connectedClient: 已连接的客户端
+      respawnTimer:
+        timeLeft: 距离重生 {{seconds}} s
+startup:
+  launcher:
+    tcls: TCLS 客户端
+    weGame: WeGame
+    riotClient: Riot 客户端
+    successMessage: 已启动进程：{{name}}
+    failedMessage: 无法启动进程 {{name}}：{{reason}}
+    newVersionAvailable: 新版本
+backgroundTasks:
+  taskTitle: 正在进行 ({{count}})
+  emptyPlaceholder: 无后台任务

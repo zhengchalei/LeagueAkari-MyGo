@@ -1,0 +1,79 @@
+<template>
+  <NPopover v-if="perkStyleDisplay" :delay="50">
+    <template #trigger>
+      <LcuImage
+        :src="perkStyleDisplay.iconPath"
+        v-bind="$attrs"
+        :style="{ width: `${size}px`, height: `${size}px` }"
+        class="perkstyle"
+      />
+    </template>
+    <div style="width: 180px" class="info">
+      <LcuImage class="image" :src="perkStyleDisplay.iconPath" />
+      <div class="right-side">{{ perkStyleDisplay.name }}</div>
+    </div>
+    <div style="max-width: 180px; font-size: 12px">
+      {{ perkStyleDisplay.tooltip }}
+    </div>
+  </NPopover>
+  <div
+    v-else
+    :style="{ width: `${size}px`, height: `${size}px` }"
+    v-bind="$attrs"
+    class="empty"
+  ></div>
+</template>
+
+<script setup lang="ts">
+import { useGameResourceProvider } from '@renderer-shared/providers/game-resource'
+import { NPopover } from 'naive-ui'
+import { computed } from 'vue'
+
+import LcuImage from '../LcuImage.vue'
+
+const { perkstyleId, size = 20 } = defineProps<{
+  perkstyleId?: number
+  size?: number
+}>()
+
+const resources = useGameResourceProvider()
+const perkStyleDisplay = computed(() => {
+  if (!perkstyleId) {
+    return null
+  }
+
+  return resources.perkStyles.display(perkstyleId)
+})
+</script>
+
+<style scoped>
+@reference '@renderer-shared/assets/css/tailwind.css';
+
+@layer components {
+  .perkstyle,
+  .empty {
+    border-radius: 2px;
+  }
+
+  .info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .image {
+      border-radius: 2px;
+      height: 28px;
+    }
+
+    .right-side {
+      margin-left: 8px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+  }
+
+  .empty {
+    @apply bg-gray-500/40 dark:bg-black/20;
+  }
+}
+</style>

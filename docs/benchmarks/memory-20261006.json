@@ -1,0 +1,47 @@
+{
+  "units": "MiB (bytes / 1048576)",
+  "controlledBenchmark": false,
+  "containsPlayerData": false,
+  "measurements": [
+    {
+      "application": "Timo Electron before migration",
+      "version": "historical local build",
+      "measuredAt": "2026-10-06",
+      "scenario": "Earlier migration baseline; real-client use; exact process age and foreground state not recorded",
+      "scope": "root and all descendant Electron processes",
+      "processCount": 6,
+      "workingSetMiB": 1665.0,
+      "privateBytesMiB": 1626.1
+    },
+    {
+      "application": "LeagueAkari",
+      "version": "1.4.3",
+      "measuredAt": "2026-10-06T03:32:29.7486155+08:00",
+      "scenario": "当前本人战绩页面；五个 Electron 进程；长时间运行，非受控基准",
+      "scope": "root and all descendant processes, including WebView2/Electron subprocesses",
+      "processCount": 5,
+      "workingSetMiB": 827.1,
+      "privateBytesMiB": 895.7
+    },
+    {
+      "application": "Timo MyGo",
+      "version": "0.4.0",
+      "measuredAt": "2026-10-06T02:44:52+08:00",
+      "scenario": "own history loaded; auxiliary windows not automatically shown",
+      "scope": "root and all descendant processes, including WebView2/Electron subprocesses",
+      "processCount": 7,
+      "workingSetMiB": 660.1,
+      "privateBytesMiB": 507.9
+    },
+    {
+      "application": "LeagueAkari-MyGo",
+      "version": "0.5.0",
+      "measuredAt": "2026-10-06T03:46:54.6107928+08:00",
+      "scenario": "正常启动；真实本人战绩20场已加载；主窗口在前景；无远程调试",
+      "scope": "root and all descendant processes, including WebView2/Electron subprocesses",
+      "processCount": 7,
+      "workingSetMiB": 629.6,
+      "privateBytesMiB": 478.4
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+timo:
+  navigation:
+    myHistory: 我的战绩
+    more: 更多功能
+  selection:
+    title: 英雄选择
+    hint: 点击英雄头像即可选择或切换
+    current: 当前英雄
+    waiting: 等待选择英雄
+    buffs: 增益
+    debuffs: 减益
+    noChanges: 无调整
+    noBalance: 暂无此模式的独立平衡数据
+    source: '数据来源：{{source}}'
+    failed: '英雄切换失败：{{reason}}'
+    ownedSkins: 已有皮肤
+    skinCount: '{{count}} 款可用'
+    noSkins: 暂无可用皮肤
+    skinLoading: 正在读取已有皮肤
+    skinLoadFailed: 皮肤读取失败，点击刷新重试
+    skinDisabled: 当前阶段不能切换皮肤
+    skinFailed: 皮肤切换失败
+    refresh: 刷新
+  match:
+    title: 对局战绩
+    hint: 点击玩家查看完整战绩，点击单场查看详情

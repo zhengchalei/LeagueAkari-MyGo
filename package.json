@@ -1,0 +1,30 @@
+{
+  "name": "leagueakari-mygo",
+  "version": "0.5.0",
+  "private": true,
+  "description": "基于 MyGo 的轻量级国服 LOL 战绩与选人助手，源自 LeagueAkari",
+  "main": "app/main.cjs",
+  "scripts": {
+    "start": "node scripts/start-desktop.cjs",
+    "demo": "electron . --demo",
+    "web": "node app/server.cjs",
+    "test": "node --test test/*.test.cjs",
+    "desktop:install": "cd desktop && node .yarn/releases/yarn-4.9.1.cjs install --immutable",
+    "desktop:build": "cd desktop && node .yarn/releases/yarn-4.9.1.cjs build",
+    "desktop:test": "cd desktop && node .yarn/releases/yarn-4.9.1.cjs test",
+    "desktop:dev": "cd desktop && node .yarn/releases/yarn-4.9.1.cjs dev",
+    "desktop:package": "cd desktop && node .yarn/releases/yarn-4.9.1.cjs build:portable",
+    "mygo:build": "node scripts/build-mygo.cjs",
+    "mygo:test": "cd mygo && go test ./...",
+    "mygo:check": "cd desktop && node node_modules/vue-tsc/bin/vue-tsc.js --noEmit -p ../mygo/frontend/tsconfig.json",
+    "mygo:package": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-mygo.ps1"
+  },
+  "devDependencies": {
+    "electron": "44.5.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zhengchalei/LeagueAkari-MyGo.git"
+  },
+  "license": "MIT"
+}

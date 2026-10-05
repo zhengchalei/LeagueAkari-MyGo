@@ -1,0 +1,192 @@
+tray:
+  about: 关于
+  settings: 设置
+  quit: 退出
+  auxWindow: 小窗口
+  opggWindow: OP.GG 窗口
+  dev:
+    toggleMainWindowDevtools: Toggle DevTools - 主窗口
+    toggleAuxWindowDevtools: Toggle DevTools - 小窗口
+    toggleOpggWindowDevtools: Toggle DevTools - OP.GG 窗口
+    toggleOngoingGameWindowDevtools: Toggle DevTools - 对局窗口
+    toggleCdTimerWindowDevtools: Toggle DevTools - 计时器窗口
+  adjustAllWindowPositions: 调整所有窗口的位置
+
+windowOpenHandler:
+  toAkari: 将转到 $t(common:appName) 的项目主页 ❤️
+  toExternalLink: 将跳转到外部链接 {{target}}
+
+auto-gameflow-main:
+  error-auto-honor: 自动点赞失败：{{reason}}
+  error-accept-match: 自动接受对局失败：{{reason}}
+  error-matchmaking: 自动匹配无法开始匹配 {{reason}}
+  auto-matchmaking-canceled: 自动匹配已取消
+  auto-matchmaking-canceled-wait-for-invitees: 自动匹配已取消，等待被邀请者
+  auto-matchmaking-canceled-not-leader: 自动匹配已取消，当前不是房间房主
+  auto-matchmaking-canceled-wait-for-penalty: 自动匹配已取消，等待秒退计时器
+  auto-matchmaking-in: 将在 {{seconds}} 秒后自动匹配
+  skip-leader: '[$t(common:appName)] 尝试将房主转让'
+  aram-team-side-1: '本局游戏你的队伍位于 🟦蓝色方 (↙️ 左下侧)'
+  aram-team-side-1-tw: '本局遊戲你的隊伍位於 🟦藍色方 (↙️ 左下側)'
+  aram-team-side-2: '本局游戏你的队伍位于 🟥红色方 (↗️ 右上侧)'
+  aram-team-side-2-tw: '本局遊戲你的隊伍位於 🟥紅色方 (↗️ 右上側)'
+  auto-invitation-sent: '[$t(common:appName)] 已向 {{name}} 发送房间邀请'
+
+auto-select-main:
+  error-pick: 尝试自动选择英雄时失败，目标英雄 {{champion}}：{{reason}}
+  error-intent: 尝试自动预选英雄失败，目标英雄 {{champion}}：{{reason}}
+  error-ban: 尝试自动禁用英雄时失败，目标英雄 {{champion}}：{{reason}}
+  error-bench-swap: 尝试自动交换英雄时失败，目标英雄 {{champion}}：{{reason}}
+  cancel-bench-swap: 已取消选择 {{champion}}
+  bench-swap: 即将在 {{seconds}} 秒后交换 {{champion}}
+  accept-champion-swap: 将在 {{seconds}} 秒后接受交换请求 {{champion}}
+  decline-champion-swap: 将在 {{seconds}} 秒后拒绝交换请求 {{champion}}
+  show-ban: 将在 {{seconds}} 秒后预禁用 {{champion}}
+  complete-ban: 将在 {{seconds}} 秒后完成禁用 {{champion}}
+  show-pick: 将在 {{seconds}} 秒后亮出 {{champion}}
+  complete-pick: 将在 {{seconds}} 秒后锁定 {{champion}}
+  intent-pick: 将在 {{seconds}} 秒后预选 {{champion}}
+  user-takeover: 用户干预了自动流程
+
+self-update-main:
+  title: 自动更新
+  start-update: $t(common:appName) 更新已开始
+  updateOnQuit: 更新已下载完成，关闭应用后执行更新流程
+  lastUpdateSuccess: 已成功更新到 {{version}}
+
+auto-champ-config-main:
+  summonerSpells:
+    applied: '{{name}} 的召唤师技能已更新为 [{{spell1}}] [{{spell2}}]'
+    appliedWithPosition: '{{name}} - {{position}} 的召唤师技能已更新为 [{{spell1}}] [{{spell2}}]'
+    errorApplied: '{{name}} 的召唤师技能更新失败'
+    errorAppliedWithPosition: '{{name}} - {{position}} 的召唤师技能更新失败'
+
+  runes:
+    pageName: '{{name}}'
+    pageNameWithPosition: '{{name}} - {{position}}'
+    applied: '{{name}} 的符文配法已更新为 {{primary}} / {{sub}} ({{all}})'
+    appliedWithPosition: '{{name}} - {{position}} 的符文配法已更新为 {{primary}} / {{sub}} ({{all}})'
+    errorApplied: '{{name}} 的符文配法更新失败'
+    errorAppliedWithPosition: '{{name}} - {{position}} 的符文配法更新失败'
+
+  auto-config-enabled-no-champion: 已启用自动配置，但无已配置的英雄
+  auto-config-enabled: 已启用自动配置，已配置的英雄：{{names}}
+
+window-manager-main:
+  aux-window:
+    quickClose:
+      title: 不需要小窗?
+      body: 可以在设置项中 (设置 > 多窗口) 永久禁用小窗口
+  download:
+    dialogTitle: 保存文件
+    dialogButtonLabel: 保存
+
+ongoing-game-main:
+  taggedPlayer: 已标记的玩家
+
+client-installation-main:
+  jumpList:
+    launchTcls:
+      title: 启动 TCLS 客户端
+      description: 启动 League Akari 并启动 TCLS 客户端
+    launchRiot:
+      title: 启动 Riot 客户端
+      description: 启动 League Akari 并启动 Riot 客户端
+    launchWeGame:
+      title: 启动 WeGame
+      description: 启动 League Akari 并启动 WeGame
+
+in-game-send-main:
+  presets:
+    punctuation:
+      lineSeparator: '：'
+      listSeparator: '，'
+      memberSeparator: ', '
+      groupSeparator: ' '
+    common:
+      unknownPosition: 位置未知
+      unsetChampion: 英雄未定
+      championId: 英雄 {{id}}
+      playerBaseLine: '{{position}} {{player}} | {{champion}}'
+      currentChampion: 当前英雄
+      thisChampion: 本英雄
+      noChampionSelected: 尚未选择英雄
+      noMainChampions: 无明显主玩英雄
+      championWithPlayer: '{{champion}}（{{player}}）'
+      target:
+        friendly: 我方
+        enemy: 敌方
+        all: 全体
+      team:
+        friendly: 我方
+        enemy: 敌方
+        labelWithName: '{{side}} · {{team}}'
+      selection:
+        empty: '[选中: 无]'
+        summary: '[选中: {{parts}}]'
+        teamPart: '{{team}} {{count}}'
+        partSeparator: ' / '
+    rating:
+      noRecentMatches: 近期没有对局记录
+      noChampionMatches: 近期没有{{champion}}对局记录
+      matchCount_one: '{{count}}场对局'
+      matchCount_other: '{{count}}场对局'
+      championMatchCount_one: '{{champion}}{{count}}场'
+      championMatchCount_other: '{{champion}}{{count}}场'
+      countWithStats: '{{countText}}，{{stats}}'
+      metrics:
+        winRate: 胜率{{value}}
+        kda: KDA{{value}}
+        avgSoloKills: 场均单杀{{value}}
+        avgVisionScore: 场均视野得分{{value}}
+        avgChampionDamage: 伤害{{value}}
+        avgDamageTaken: 承伤{{value}}
+        avgGold: 经济{{value}}
+        avgCsPerMinute: 补兵{{value}}/分
+        avgKillParticipation: 参团率{{value}}
+        avgDamageGoldEfficiency: 伤转比{{value}}
+        mainChampions: 主玩英雄[{{champions}}]
+        mainPositions: 主玩位置[{{positions}}]
+    jungle:
+      noRecords: 没有打野明细记录
+      noChampionRecords: 没有{{champion}}打野明细记录
+      sampleCount_one: 打野样本{{count}}场
+      sampleCount_other: 打野样本{{count}}场
+      championSampleCount_one: '{{champion}}打野样本{{count}}场'
+      championSampleCount_other: '{{champion}}打野样本{{count}}场'
+      firstDragonAverageTime: ，首龙均时{{time}}
+      camps:
+        blue: 蓝Buff
+        red: 红Buff
+        wolves: 三狼
+        raptors: 锋喙鸟
+      campRate: '{{camp}}{{rate}}'
+      lanes:
+        top: 上
+        mid: 中
+        bot: 下
+      lanePreference:
+        unclear: 分布不明显
+        single: 偏{{lane}}
+        double: 偏{{first}}{{second}}
+      firstClear:
+        normal: 常规开
+        invade: 入侵开
+        blue: 蓝方
+        red: 红方
+        pattern: '{{side}}{{kind}}{{rate}}{{distribution}}'
+      metrics:
+        activityPreference: 前期{{preference}}，上{{top}}中{{mid}}下{{bot}}
+        level3Gank: 3级抓{{value}}
+        level4Gank: 4级抓{{value}}
+        firstDragon: 一龙率{{value}}{{time}}
+        avgDragons: 场均小龙{{value}}
+        monsterControl: 野怪资源巢虫{{voidgrubs}}/先锋{{heralds}}/大龙{{barons}}
+        mainChampions: 主玩英雄[{{champions}}]
+    premade:
+      blueTeamTitle: 蓝方开黑
+      redTeamTitle: 红方开黑
+      teamTitle: 开黑
+      blueTeamEmpty: 蓝方无开黑
+      redTeamEmpty: 红方无开黑
+      empty: 无开黑小队

@@ -1,0 +1,302 @@
+<template>
+  <div
+    class="ongoing-game-panel h-(--la-ongoing-game-height) w-(--la-ongoing-game-width)"
+    :class="{ 'ongoing-game-panel--draft': isDraftMode }"
+    :style="{
+      '--la-ongoing-game-height': contentHeight + 'px',
+      '--la-ongoing-game-width': contentWidth + 'px'
+    }"
+  >
+    <NScrollbar v-if="!isInIdleState" x-scrollable>
+      <div
+        class="m relative mx-auto box-border flex flex-col gap-4 p-4"
+        :class="{ 'w-fit': columnsNeed >= 4 }"
+        :style="teamsContainerStyles"
+      >
+        <OngoingGameTeam
+          v-for="(players, teamIdentifier) of sortedTeams"
+          :teamIdentifier="teamIdentifier"
+          :key="teamIdentifier"
+          :puuids="players"
+        />
+
+        <div
+          v-if="isTwoTeamsMode && linesPerTeam === 1 && Object.keys(sortedTeams).length === 1"
+          class="flex-1"
+        ></div>
+      </div>
+    </NScrollbar>
+
+    <!-- placeholder panel -->
+    <div v-else class="relative flex h-full">
+      <div
+        class="absolute top-[48%] left-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-4"
+      >
+        <template v-if="ongoingGame.settings.enabled">
+          <template v-if="!ongoingGame.isConnected">
+            <NIcon class="text-6xl text-black/30 dark:text-white/30" :component="PlugConnected" />
+            <div class="text-base font-normal text-black/60 dark:text-white/80">
+              {{ t('ongoingGame.panel.disconnected') }}
+            </div>
+          </template>
+
+          <template v-else-if="ongoingGame.isSpectating">
+            <NIcon class="text-6xl text-black/30 dark:text-white/30" :component="TimeOutline" />
+            <div class="text-base font-normal text-black/60 dark:text-white/80">
+              {{ t('ongoingGame.panel.waitingForSpectate') }}
+            </div>
+          </template>
+
+          <template v-else>
+            <NIcon class="text-6xl text-black/30 dark:text-white/30" :component="GameController" />
+            <div class="text-base font-normal text-black/60 dark:text-white/80">
+              {{ t('ongoingGame.panel.noOngoingGame') }}
+            </div>
+          </template>
+        </template>
+
+        <template v-else>
+          <NIcon class="text-6xl text-black/30 dark:text-white/30" :component="Forbid" />
+          <div class="text-base font-normal text-black/60 dark:text-white/80">
+            {{ t('ongoingGame.panel.disabled') }}
+          </div>
+        </template>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { GameController, TimeOutline } from '@vicons/ionicons5'
+import { Forbid, PlugConnected } from '@vicons/tabler'
+import { useOngoingGameProvider } from '@renderer-shared/providers/ongoing-game'
+import { useTranslation } from 'i18next-vue'
+import { NIcon, NScrollbar } from 'naive-ui'
+import { computed } from 'vue'
+
+import type { MatchPreviewPayload } from '../match-preview'
+import { FIXED_CARD_WIDTH_PX_NUMBER, POSITION_ORDER, PREMADE_TEAMS } from './constants'
+import {
+  getOngoingGamePanelKdaOutliers,
+  type OngoingGamePanelPlayerTabInitParams,
+  provideOngoingGamePanel
+} from './context'
+import OngoingGameTeam from './widgets/OngoingGameTeam.vue'
+
+const props = defineProps<{
+  /** 容器参考宽度，用于计算列数 */
+  contentWidth: number
+  /** 容器参考高度，用于计算两队模式下的高度样式 */
+  contentHeight: number
+  /** 独立 ongoing-game 窗口只提供展示和轻量交互 */
+  isStandaloneOngoingGameWindow?: boolean
+}>()
+
+const emits = defineEmits<{
+  navigateToSummonerByPuuid: [puuid: string, initParams?: OngoingGamePanelPlayerTabInitParams]
+  previewGame: [payload: MatchPreviewPayload]
+}>()
+
+const { t } = useTranslation()
+
+const ongoingGameProviderValue = useOngoingGameProvider()
+const ongoingGame = computed(() => ongoingGameProviderValue)
+
+const isDraftMode = computed(() => Boolean(ongoingGame.value.draft))
+
+const isInIdleState = computed(() => ongoingGame.value.queryStage.phase === 'unavailable')
+
+const mergedPremadeTeams = computed(() => {
+  if (
+    ongoingGame.value.queryStage.phase === 'lobby' ||
+    ongoingGame.value.queryStage.phase === 'unavailable'
+  ) {
+    return {
+      groups: {},
+      premadeTeamIdMap: {}
+    }
+  }
+
+  const playerMap: {
+    groups: Record<string, string[]> // premadeId, puuids
+    premadeTeamIdMap: Record<string, string> // puuid, premadeId (A, B, C, ...)
+  } = {
+    groups: {},
+    premadeTeamIdMap: {}
+  }
+
+  for (const [puuid, premadeId] of Object.entries(ongoingGame.value.mergedPremadeTeamMap)) {
+    const groupId = PREMADE_TEAMS[premadeId - 1]
+
+    if (playerMap.groups[groupId]) {
+      playerMap.groups[groupId].push(puuid)
+    } else {
+      playerMap.groups[groupId] = [puuid]
+    }
+
+    playerMap.premadeTeamIdMap[puuid] = groupId
+  }
+
+  return playerMap
+})
+
+const sortedTeams = computed(() => {
+  if (!ongoingGame.value.teams) {
+    return {}
+  }
+
+  const sorted: Record<string, string[]> = {}
+
+  Object.entries(ongoingGame.value.teams).forEach(([team, players]) => {
+    if (!players.length) {
+      return
+    }
+
+    sorted[team] = players.toSorted((a, b) => {
+      if (ongoingGame.value.settings.orderPlayerBy === 'position') {
+        const pa = ongoingGame.value.positionAssignments[a]?.position || 'NONE'
+        const pb = ongoingGame.value.positionAssignments[b]?.position || 'NONE'
+
+        return POSITION_ORDER[pa] - POSITION_ORDER[pb]
+      }
+
+      if (ongoingGame.value.settings.orderPlayerBy === 'premade-team') {
+        const info = mergedPremadeTeams.value
+        const idMap = info.premadeTeamIdMap
+        const groups = info.groups
+
+        const teamA = idMap[a]
+        const teamB = idMap[b]
+
+        if (!!teamA !== !!teamB) {
+          return teamA ? -1 : 1
+        }
+
+        if ((!teamA && !teamB) || teamA === teamB) return 0
+
+        const sizeDiff = groups[teamB].length - groups[teamA].length
+        if (sizeDiff) return sizeDiff
+
+        return teamA.localeCompare(teamB)
+      }
+
+      const statsA = ongoingGame.value.analysis?.players[a]
+      const statsB = ongoingGame.value.analysis?.players[b]
+
+      if (ongoingGame.value.settings.orderPlayerBy === 'akari-score') {
+        return (statsB?.akariScore.total || 0) - (statsA?.akariScore.total || 0)
+      }
+
+      if (ongoingGame.value.settings.orderPlayerBy === 'kda') {
+        return (statsB?.summary.avgKda || 0) - (statsA?.summary.avgKda || 0)
+      }
+
+      if (ongoingGame.value.settings.orderPlayerBy === 'win-rate') {
+        return (statsB?.summary.winRate || 0) - (statsA?.summary.winRate || 0)
+      }
+
+      return 0
+    })
+  })
+
+  return sorted
+})
+
+const columnsNeed = computed(() => {
+  const teamColumns = Object.values(ongoingGame.value.teams || {})
+    .map((t) => t.length)
+    .reduce((a, b) => Math.max(a, b), 0)
+
+  const maxAllowed = [8, 7, 6, 5, 4, 3].find(
+    (col) => props.contentWidth > FIXED_CARD_WIDTH_PX_NUMBER * (col + 0.25)
+  )
+
+  return Math.min(maxAllowed || 2, teamColumns)
+})
+
+const linesPerTeam = computed(() => {
+  const maxMembers = Math.max(0, ...Object.values(sortedTeams.value).map((t) => t.length))
+
+  if (!columnsNeed.value) {
+    return 0
+  }
+
+  return Math.ceil(maxMembers / columnsNeed.value)
+})
+
+const isTwoTeamsMode = computed(() => {
+  return Object.keys(sortedTeams.value).some((t) => t === 'TEAM-100' || t === 'TEAM-200')
+})
+
+const teamsContainerStyles = computed(() => {
+  // 1. 必须是两队式
+  // 2. 只有一排显示
+  if (isTwoTeamsMode.value && linesPerTeam.value === 1) {
+    return {
+      height: props.contentHeight + 'px',
+      maxHeight: '1200px',
+      minHeight: '500px'
+    }
+  }
+
+  // 其他情况容器固定高度 (600px)
+  return {}
+})
+
+const kdaOutliers = computed(() => getOngoingGamePanelKdaOutliers(ongoingGame.value.analysis))
+const isStandaloneOngoingGameWindow = computed(() => props.isStandaloneOngoingGameWindow ?? false)
+
+provideOngoingGamePanel({
+  contentWidth: () => props.contentWidth,
+  contentHeight: () => props.contentHeight,
+
+  columnsNeed,
+  linesPerTeam,
+  isTwoTeamsMode,
+  mergedPremadeTeams,
+  ongoingGame,
+  isStandaloneOngoingGameWindow,
+  kdaOutliers,
+
+  navigateToSummonerByPuuid: (puuid: string, initParams?: OngoingGamePanelPlayerTabInitParams) => {
+    emits('navigateToSummonerByPuuid', puuid, initParams)
+  },
+  previewGame: (payload: MatchPreviewPayload) => {
+    emits('previewGame', payload)
+  }
+})
+</script>
+
+<style scoped>
+.ongoing-game-panel {
+  position: relative;
+  isolation: isolate;
+  --draft-grid-bg-color: color-mix(in oklch, black 4%, transparent);
+  --draft-grid-line-color: color-mix(in oklch, var(--la-color-text-themed) 20%, transparent);
+
+  [data-theme='dark'] & {
+    --draft-grid-bg-color: color-mix(in oklch, white 5%, transparent);
+    --draft-grid-line-color: color-mix(in oklch, var(--la-color-text-themed) 60%, transparent);
+  }
+}
+
+.ongoing-game-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  background-color: var(--draft-grid-bg-color);
+  background-image:
+    linear-gradient(var(--draft-grid-line-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--draft-grid-line-color) 1px, transparent 1px);
+  background-position: center top;
+  background-size: 28px 28px;
+  transition: opacity 0.2s ease;
+}
+
+.ongoing-game-panel--draft::before {
+  opacity: 1;
+}
+</style>

@@ -1,0 +1,24 @@
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.web.json"
+    },
+    {
+      "path": "./native/win32-x64/tsconfig.json"
+    }
+  ],
+  "compilerOptions": {
+    "types": ["@modyfi/vite-plugin-yaml/modules"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noImplicitAny": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}

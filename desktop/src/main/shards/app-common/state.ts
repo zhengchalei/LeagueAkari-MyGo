@@ -1,0 +1,138 @@
+import { NATIVE_SUPPORT } from '@main/native'
+import { AppThemeSetting } from '@shared/types/app-theme'
+import { AkariSupportedPlatform, BaseConfig, NativeSupport } from '@shared/types/common'
+import { makeAutoObservable, observable } from 'mobx'
+
+export class AppCommonState {
+  isElevated: boolean = false
+
+  platform: AkariSupportedPlatform = 'unknown'
+
+  /**
+   * 仅用于展示, 是否禁用硬件加速
+   */
+  disableHardwareAcceleration: boolean = false
+
+  baseConfig: BaseConfig | null = null
+
+  shouldUseDarkColors: boolean = false
+
+  /**
+   * 跟随本次启动而来的 deep link
+   */
+  startupDeepLink: string | null = null
+
+  isRunInTempDir: boolean = false
+
+  nativeSupport: NativeSupport = NATIVE_SUPPORT
+
+  setElevated(s: boolean) {
+    this.isElevated = s
+  }
+
+  setPlatform(s: AkariSupportedPlatform) {
+    this.platform = s
+  }
+
+  setDisableHardwareAcceleration(s: boolean) {
+    this.disableHardwareAcceleration = s
+  }
+
+  setBaseConfig(s: BaseConfig | null) {
+    this.baseConfig = s
+  }
+
+  setShouldUseDarkColors(s: boolean) {
+    this.shouldUseDarkColors = s
+  }
+
+  setStartupDeepLink(s: string | null) {
+    this.startupDeepLink = s
+  }
+
+  setRunInTempDir(s: boolean) {
+    this.isRunInTempDir = s
+  }
+
+  constructor() {
+    makeAutoObservable(this, { baseConfig: observable.ref })
+  }
+}
+
+export class AppCommonSettings {
+  /**
+   * 输出前置声明
+   */
+  showFreeSoftwareDeclaration: boolean = false
+
+  /**
+   * 语言
+   */
+  locale: string = 'zh-CN'
+
+  /**
+   * 主题色
+   */
+  theme: AppThemeSetting = 'light'
+
+  /**
+   * HTTP 代理
+   */
+  httpProxy: {
+    strategy: 'force' | 'auto' | 'disable'
+    port: number
+    host: string
+  } = {
+    strategy: 'disable',
+    port: 7890,
+    host: '127.0.0.1'
+  }
+
+  streamerMode: boolean = false
+
+  streamerModeUseAkariStyledName: boolean = false
+
+  /**
+   * 这里用来记录应用偏向的数据源
+   *
+   * - 当部分数据可以走 sgp 和 lcu 时，优先走 sgp
+   * - 强制全部走 lcu
+   *
+   * 它同时要被多个地方使用，所以就提升到此模块中
+   */
+  preferredLolSource: 'sgp' | 'lcu' = 'sgp'
+
+  setShowFreeSoftwareDeclaration(s: boolean) {
+    this.showFreeSoftwareDeclaration = s
+  }
+
+  setLocale(s: string) {
+    this.locale = s
+  }
+
+  setTheme(s: AppThemeSetting) {
+    this.theme = s
+  }
+
+  setHttpProxy(s: { strategy: 'force' | 'disable'; port: number; host: string }) {
+    this.httpProxy = s
+  }
+
+  setStreamerMode(s: boolean) {
+    this.streamerMode = s
+  }
+
+  setStreamerModeUseAkariStyledName(s: boolean) {
+    this.streamerModeUseAkariStyledName = s
+  }
+
+  setPreferredLolSource(s: 'sgp' | 'lcu') {
+    this.preferredLolSource = s
+  }
+
+  constructor() {
+    makeAutoObservable(this, {
+      httpProxy: observable.ref
+    })
+  }
+}

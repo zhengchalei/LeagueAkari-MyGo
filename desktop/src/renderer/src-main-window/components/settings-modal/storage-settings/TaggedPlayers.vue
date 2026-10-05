@@ -1,0 +1,503 @@
+<template>
+  <div class="box-border h-full rounded-lg bg-black/5 p-3 dark:bg-white/5">
+    <NModal
+      v-model:show="showEditModal"
+      preset="card"
+      :title="t('settings.taggedPlayers.editModal.title')"
+      class="max-w-[60vw]"
+    >
+      <NInput
+        v-model:value="currentEditingTag"
+        :placeholder="t('settings.taggedPlayers.editModal.inputPlaceholder')"
+        type="textarea"
+        :autosize="{ minRows: 3, maxRows: 4 }"
+        ref="input"
+      />
+
+      <div class="mt-3 flex justify-end gap-1">
+        <NButton size="small" @click="showEditModal = false">{{
+          t('settings.taggedPlayers.cancelButton')
+        }}</NButton>
+
+        <NButton
+          size="small"
+          type="primary"
+          @click="
+            () => {
+              if (currentEditing) {
+                updateTag(currentEditing.puuid, currentEditing.selfPuuid, currentEditingTag || null)
+                showEditModal = false
+              }
+            }
+          "
+          >{{ t('settings.taggedPlayers.saveButton') }}</NButton
+        >
+      </div>
+    </NModal>
+
+    <div class="flex h-full flex-col">
+      <div class="mb-2 flex items-center gap-2">
+        <NButton size="small" type="primary" secondary @click="handleExportTaggedPlayers">
+          {{ t('settings.taggedPlayers.exportButton') }}
+        </NButton>
+        <NButton size="small" secondary @click="handleImportTaggedPlayers">
+          {{ t('settings.taggedPlayers.importButton') }}
+        </NButton>
+        <NButton
+          type="primary"
+          size="small"
+          @click="() => loadPage(pagination.page || 1, pagination.pageSize || 20)"
+        >
+          {{ t('settings.taggedPlayers.refreshButton') }}
+        </NButton>
+        <NCheckbox v-model:checked="onlyCurrentAccount" :disabled="!lcs.summoner.me">
+          {{ t('settings.taggedPlayers.onlyCurrentAccountCheckbox') }}
+        </NCheckbox>
+      </div>
+
+      <MaskedComponent :show-mask="showMask">
+        <template #mask>
+          <div class="flex h-full w-full flex-col items-center justify-center gap-4">
+            <span>{{ t('settings.taggedPlayers.streamerModeWarning') }}</span>
+            <NButton type="warning" size="small" @click="showMask = false">{{
+              t('settings.taggedPlayers.showButton')
+            }}</NButton>
+          </div>
+        </template>
+        <NDataTable
+          size="small"
+          remote
+          :data="tableData"
+          :single-line="false"
+          :columns="columns"
+          :loading="isLoading"
+          :pagination="pagination"
+          class="h-full"
+          flex-height
+        />
+      </MaskedComponent>
+    </div>
+  </div>
+</template>
+
+<script lang="tsx" setup>
+import LcuImage from '@renderer-shared/components/LcuImage.vue'
+import MaskedComponent from '@renderer-shared/components/MaskedComponent.vue'
+import { useInteroperableSgpServers } from '@renderer-shared/composables/useInteroperableSgpServers'
+import { useInstance } from '@renderer-shared/shards'
+import { useAppCommonStore } from '@renderer-shared/shards/app-common/store'
+import { LeagueClientRenderer } from '@renderer-shared/shards/league-client'
+import { useLeagueClientStore } from '@renderer-shared/shards/league-client/store'
+import { profileIconUri } from '@renderer-shared/shards/league-client/game-data-assets'
+import { RiotClientRenderer } from '@renderer-shared/shards/riot-client'
+import { SavedPlayerRenderer } from '@renderer-shared/shards/saved-player'
+import { SgpRenderer } from '@renderer-shared/shards/sgp'
+import { useSgpStore } from '@renderer-shared/shards/sgp/store'
+import { toLcuSummoner } from '@shared/data-adapter/summoner'
+import { SummonerInfo } from '@shared/types/league-client/summoner'
+import { getSgpServerId, isTencentServer } from '@shared/utils/sgp'
+import { useTranslation } from 'i18next-vue'
+import {
+  DataTableColumns,
+  NButton,
+  NCheckbox,
+  NDataTable,
+  NInput,
+  NModal,
+  NPopconfirm,
+  NScrollbar,
+  NTag,
+  NTooltip,
+  PaginationProps,
+  useMessage
+} from 'naive-ui'
+import {
+  computed,
+  nextTick,
+  reactive,
+  ref,
+  shallowReactive,
+  shallowRef,
+  useTemplateRef,
+  watch
+} from 'vue'
+
+import { PlayerTabsRenderer } from '@main-window/shards/player-tabs'
+
+interface RecordType {
+  selfPuuid: string
+  puuid: string
+  region: string
+  rsoPlatformId: string
+  tag: string
+}
+
+interface MappedRecordType extends RecordType {
+  key: string
+  sgpServerId: string
+}
+
+const { t } = useTranslation()
+const sp = useInstance(SavedPlayerRenderer)
+const lc = useInstance(LeagueClientRenderer)
+const pt = useInstance(PlayerTabsRenderer)
+const sgp = useInstance(SgpRenderer)
+const rc = useInstance(RiotClientRenderer)
+
+const as = useAppCommonStore()
+const lcs = useLeagueClientStore()
+
+const { navigateToTabByPuuidAndSgpServerId } = pt.useNavigateToTab()
+
+const sgps = useSgpStore()
+
+const message = useMessage()
+
+const tableData = shallowRef<MappedRecordType[]>([])
+
+const { getInteroperability } = useInteroperableSgpServers()
+
+const onlyCurrentAccount = ref(true)
+
+const summonerShallowMap = shallowReactive<Record<string, SummonerInfo>>({})
+
+const renderPlayer = (puuid: string, sgpServerId: string) => {
+  const cached = summonerShallowMap[puuid]
+
+  if (cached) {
+    return (
+      <div
+        class="flex w-fit cursor-pointer items-center gap-2"
+        onClick={() => {
+          navigateToTabByPuuidAndSgpServerId(puuid, sgpServerId)
+        }}
+      >
+        <LcuImage class="h-4 w-4 rounded-sm" src={profileIconUri(cached.profileIconId)} />
+        <span class="text-xs">{`${cached.gameName}#${cached.tagLine}`}</span>
+      </div>
+    )
+  }
+
+  return (
+    <NTooltip keepAliveOnHover={false}>
+      {{
+        trigger: () => (
+          <span class="text-xs text-black/60 dark:text-white/60">
+            {t('settings.taggedPlayers.na', {
+              truncatedPuuid: puuid.slice(0, 8)
+            })}
+          </span>
+        ),
+        default: () => (
+          <div>
+            <div class="mb-1">{t('settings.taggedPlayers.naPopoverContent')}</div>
+            <div>{t('settings.taggedPlayers.player', { puuid })}</div>
+          </div>
+        )
+      }}
+    </NTooltip>
+  )
+}
+
+const renderSgpServerTag = (sgpServerId: string) => {
+  return (
+    <NTag size="tiny" bordered={false} type={isTencentServer(sgpServerId) ? 'success' : 'info'}>
+      {t(`sgpServers.${sgpServerId}`, {
+        defaultValue: sgpServerId,
+        ns: 'common'
+      })}
+    </NTag>
+  )
+}
+
+const renderLinedText = (text: string) => {
+  return (
+    <NScrollbar class="max-h-[100px]">
+      <div class="text-xs whitespace-pre-wrap">{text}</div>
+    </NScrollbar>
+  )
+}
+
+const renderBoldTitle = (text: string) => {
+  return <span class="text-xs font-bold">{text}</span>
+}
+
+const isLoading = ref(false)
+
+const columns = computed<DataTableColumns<MappedRecordType>>(() => [
+  {
+    title: () => renderBoldTitle('#'),
+    key: 'ordinal',
+    render: (_row, index: number) => {
+      return (
+        <span class="text-xs">
+          {((pagination.page || 1) - 1) * (pagination.pageSize || 20) + index + 1}
+        </span>
+      )
+    },
+    width: 68
+  },
+  {
+    title: () => renderBoldTitle(t('settings.taggedPlayers.columns.tagger')),
+    key: 'selfPuuid',
+    render: (row) => {
+      return renderPlayer(row.selfPuuid, row.sgpServerId)
+    }
+  },
+  {
+    title: () => renderBoldTitle(t('settings.taggedPlayers.columns.tagged')),
+    key: 'puuid',
+    render: (row: any) => {
+      return renderPlayer(row.puuid, row.sgpServerId)
+    }
+  },
+  {
+    title: () => renderBoldTitle(t('settings.taggedPlayers.columns.sgpServer')),
+    key: 'sgpServerId',
+    render: (row: any) => renderSgpServerTag(row.sgpServerId),
+    width: 100
+  },
+  {
+    title: () => renderBoldTitle(t('settings.taggedPlayers.columns.tag')),
+    key: 'tag',
+    render: (row: any) => {
+      return renderLinedText(row.tag)
+    }
+  },
+
+  {
+    title: '',
+    key: 'operations',
+    render: (row) => {
+      return (
+        <div class="flex items-center gap-1">
+          <NButton
+            size="tiny"
+            type="info"
+            onClick={() => {
+              currentEditing.value = row
+              currentEditingTag.value = row.tag
+              showEditModal.value = true
+              nextTick(() => inputEl.value?.focus())
+            }}
+          >
+            {t('settings.taggedPlayers.editButton')}
+          </NButton>
+          <NPopconfirm
+            positiveText={t('settings.taggedPlayers.deleteButton')}
+            negativeText={t('settings.taggedPlayers.cancelButton')}
+            positiveButtonProps={{
+              type: 'error',
+              size: 'tiny'
+            }}
+            negativeButtonProps={{
+              size: 'tiny'
+            }}
+            onPositiveClick={() => {
+              updateTag(row.puuid, row.selfPuuid, null)
+            }}
+          >
+            {{
+              trigger: () => (
+                <NButton size="tiny" type="error">
+                  {t('settings.taggedPlayers.deleteButton')}
+                </NButton>
+              ),
+              default: () => t('settings.taggedPlayers.deletePopconfirmContent')
+            }}
+          </NPopconfirm>
+        </div>
+      )
+    }
+  }
+])
+
+const updateTag = async (puuid: string, selfPuuid: string, tag: string | null) => {
+  try {
+    await sp.updatePlayerTag({
+      puuid,
+      selfPuuid,
+      tag
+    })
+    message.success(() => t('settings.taggedPlayers.updated'))
+    loadPage(pagination.page || 1, pagination.pageSize || 20)
+  } catch (error: any) {
+    message.error(() =>
+      t('settings.taggedPlayers.updateFailed', {
+        reason: error.message
+      })
+    )
+  }
+}
+
+const pagination: PaginationProps = reactive({
+  page: 1,
+  pageSize: 20,
+  showSizePicker: true,
+  pageSizes: [10, 20, 50, 100],
+  disabled: computed(() => isLoading.value),
+  onChange: (page: number) => {
+    loadPage(page, pagination.pageSize || 20)
+  },
+  onUpdatePageSize: (pageSize: number) => {
+    loadPage(pagination.page || 1, pageSize)
+  }
+})
+
+const updateCachedSummoners = async (
+  players: {
+    puuid: string
+    sgpServerId: string
+  }[]
+) => {
+  for (const player of players) {
+    if (summonerShallowMap[player.puuid] || !getInteroperability(player.sgpServerId).common) {
+      continue
+    }
+
+    if (sgps.availability.sgpServerId === player.sgpServerId) {
+      lc.api.summoner.getSummonerByPuuid(player.puuid).then((summoner) => {
+        summonerShallowMap[player.puuid] = summoner.data
+      })
+    } else {
+      sgp.api.summonerLedge
+        .postSummonersByPuuids([player.puuid], {
+          __sgpServerId: player.sgpServerId
+        })
+        .then(({ data: summoners }) => {
+          if (summoners.length) {
+            rc.api.playerAccount.getPlayerAccountNameset([player.puuid]).then((nameset) => {
+              const summoner = toLcuSummoner(
+                summoners[0],
+                nameset.data.namesets[0]?.gnt.gameName || '',
+                nameset.data.namesets[0]?.gnt.tagLine || ''
+              )
+
+              summonerShallowMap[player.puuid] = summoner
+            })
+          }
+        })
+    }
+  }
+}
+
+const loadPage = async (page: number, pageSize: number) => {
+  isLoading.value = true
+  try {
+    const { data, total } = await sp.getAllPlayerTags({
+      page,
+      pageSize,
+      selfPuuid: onlyCurrentAccount.value ? lcs.summoner.me?.puuid : undefined
+    })
+
+    tableData.value = (data as RecordType[]).map((item: any) => {
+      return {
+        ...item,
+        key: `${item.selfPuuid}😊${item.puuid}`,
+        sgpServerId: getSgpServerId(item.region, item.rsoPlatformId)
+      }
+    })
+
+    const summonersToLoad = (data as RecordType[]).map((item) => {
+      return [
+        {
+          puuid: item.puuid,
+          sgpServerId: getSgpServerId(item.region, item.rsoPlatformId)
+        },
+        {
+          puuid: item.selfPuuid,
+          sgpServerId: getSgpServerId(item.region, item.rsoPlatformId)
+        }
+      ]
+    })
+
+    updateCachedSummoners(summonersToLoad.flat())
+
+    pagination.page = page
+    pagination.pageSize = pageSize
+    pagination.itemCount = total
+  } catch (error: any) {
+    message.warning(error.message)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+watch(
+  () => sgps.availability.sgpServerId,
+  (_) => {
+    loadPage(pagination.page || 1, pagination.pageSize || 20)
+  },
+  {
+    immediate: true
+  }
+)
+
+watch(
+  () => onlyCurrentAccount.value,
+  (_value) => {
+    loadPage(1, pagination.pageSize || 20)
+  }
+)
+
+const inputEl = useTemplateRef('input')
+const currentEditing = shallowRef<MappedRecordType | null>(null)
+const showEditModal = ref(false)
+const currentEditingTag = ref('')
+
+const showMask = ref(false)
+
+watch(
+  () => as.settings.streamerMode,
+  (value) => {
+    showMask.value = value
+  },
+  {
+    immediate: true
+  }
+)
+
+const handleExportTaggedPlayers = async () => {
+  try {
+    const exportPath = await sp.exportTaggedPlayersToJsonFile()
+
+    if (exportPath) {
+      message.success(() => t('settings.taggedPlayers.exported', { path: exportPath }))
+    }
+  } catch (error: any) {
+    message.error(() => t('settings.taggedPlayers.errorExport', { reason: error.message }))
+  }
+}
+
+const handleImportTaggedPlayers = async () => {
+  try {
+    const importPath = await sp.importTaggedPlayersFromJsonFile()
+
+    if (importPath) {
+      message.success(() => t('settings.taggedPlayers.imported', { path: importPath }))
+      await loadPage(pagination.page || 1, pagination.pageSize || 20)
+    }
+  } catch (error: any) {
+    if (error.code) {
+      switch (error.code) {
+        case 'InvalidTaggedPlayersFile':
+        case 'InvalidTaggedPlayersData':
+          message.error(() => t('settings.taggedPlayers.errorCode.InvalidTaggedPlayersFile'))
+          break
+        case 'InvalidDatabaseVersion':
+          message.error(() => t('settings.taggedPlayers.errorCode.InvalidDatabaseVersion'))
+          break
+        default:
+          message.error(() =>
+            t('settings.taggedPlayers.errorCode.importDefault', { reason: error.message })
+          )
+          break
+      }
+    } else {
+      message.error(() =>
+        t('settings.taggedPlayers.errorCode.importDefault', { reason: error.message })
+      )
+    }
+  }
+}
+</script>

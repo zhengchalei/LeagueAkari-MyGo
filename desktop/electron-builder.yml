@@ -1,0 +1,72 @@
+appId: dev.leagueakari.mygo.legacy
+productName: LeagueAkari-MyGo-Legacy
+directories:
+  buildResources: build
+  output: dist/windows
+extraFiles:
+  - from: LICENSE
+    to: LEAGUE_AKARI_LICENSE.txt
+  - from: ../THIRD_PARTY_NOTICES.md
+    to: THIRD_PARTY_NOTICES.md
+files:
+  - '!**/.vscode/*'
+  - '!src{,/**}'
+  - '!electron.vite.config.{js,ts,mjs,cjs}'
+  - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md,README-en.md,FAQ.md}'
+  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml,yarn.lock}'
+  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json,tsconfig.*.tsbuildinfo}'
+  - '!{AGENTS.md,CLAUDE.md,PR_REQUIREMENTS.md}'
+  - '!{.agents,.agents/**,.claude,.claude/**,.codex,.codex/**,.mcp.json,opencode.json}'
+  - '!.playwright-mcp{,/**}'
+  - '!.storybook{,/**}'
+  - '!bench-results{,/**}'
+  - '!examples'
+  - '!docs'
+  - '!pictures'
+  - '!rabi-*'
+  - '!feedback-platform{,/**}'
+  - '!native{,/**}'
+  - '!**/.venv/**'
+  - '!node_modules/electron{,/**}'
+  - '!node_modules/**/*.map'
+  - '!node_modules/@electron-internal{,/**}'
+  - '!node_modules/@electron/get{,/**}'
+  - '!node_modules/better-sqlite3/{deps,src}{,/**}'
+  - '!node_modules/better-sqlite3/{binding.gyp,*.gypi}'
+  - '!node_modules/better-sqlite3/build/Release/{.forge-meta,obj}{,/**}'
+  - '!node_modules/league-akari-native-win32/{build,lib,scripts,node_modules}{,/**}'
+  - '!node_modules/league-akari-native-win32/{binding.gyp,tsconfig.json,*.tsbuildinfo}'
+
+electronLanguages:
+  - zh-CN
+  - zh-TW
+  - en-US
+
+afterPack: ./scripts/trim-packaged-app.cjs
+afterSign: ./scripts/macos/ensure-codesign.cjs
+
+asarUnpack:
+  - resources/**
+win:
+  target:
+    - 7z
+  executableName: LeagueAkari-MyGo-Legacy
+  artifactName: LeagueAkari-MyGo-Legacy-${version}-win.${ext}
+  icon: resources/LA_ICON.ico
+
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.utilities
+  icon: build/icon.png
+dmg:
+  artifactName: ${name}-${version}.${ext}
+asar: true
+electronFuses:
+  enableEmbeddedAsarIntegrityValidation: true
+
+npmRebuild: false
+publish:
+#   provider: generic
+#   url: https://league-akari.cocoa.sugar/releases

@@ -1,0 +1,50 @@
+type Join<K, P, T extends number | string = string> = K extends T
+  ? P extends T
+    ? `${K}${'' extends P ? '' : '.'}${P}`
+    : never
+  : never
+
+type Previous = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, ...0[]]
+
+export type Paths<T, D extends number = 3, TK extends number | string = string> = [D] extends [
+  never
+]
+  ? never
+  : T extends object
+    ? {
+        [K in keyof T]-?: K extends TK ? `${K}` | Join<K, Paths<T[K], Previous[D]>> : never
+      }[keyof T]
+    : ''
+
+type IsPlainObject<T> = T extends object
+  ? T extends Function
+    ? false
+    : T extends readonly any[]
+      ? false
+      : T extends Map<any, any>
+        ? false
+        : T extends Set<any>
+          ? false
+          : T extends WeakMap<any, any>
+            ? false
+            : T extends WeakSet<any>
+              ? false
+              : T extends Date
+                ? false
+                : T extends RegExp
+                  ? false
+                  : T extends Promise<any>
+                    ? false
+                    : true
+  : false
+
+export type DeepPartialObject<T> =
+  IsPlainObject<T> extends true ? { [K in keyof T]?: DeepPartialObject<T[K]> } : T
+
+export type MergeOptionalStrict<A, B> = {
+  [K in keyof A & keyof B]: A[K] extends B[K] ? (B[K] extends A[K] ? A[K] : never) : never
+} & {
+  [K in Exclude<keyof A, keyof B>]?: A[K]
+} & {
+  [K in Exclude<keyof B, keyof A>]?: B[K]
+}

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "id": "2026-05-16-tencent-hn10",
+  "capturedDate": "2026-05-16",
+  "timezone": "Asia/Shanghai",
+  "environment": {
+    "server": "TENCENT_HN10",
+    "regionFamily": "tencent",
+    "note": "Based on Tencent-reachable LCU and SGP payloads. Published player identities and match identifiers are synthetic and do not refer to real accounts."
+  },
+  "players": [
+    {
+      "gameName": "FixturePlayer1",
+      "tagLine": "TEST",
+      "puuid": "00000000-0000-4000-8000-000000000001",
+      "purpose": "SGP Arena samples, including queue 1700 and 1750"
+    },
+    {
+      "gameName": "FixturePlayer2",
+      "tagLine": "TEST",
+      "puuid": "00000000-0000-4000-8000-000000000002",
+      "purpose": "LCU current summoner match-history and multi-queue samples"
+    }
+  ],
+  "sgp": {
+    "matchHistoryQuery": {
+      "path": "sgp/match-history-query",
+      "endpoint": "getMatchHistorySummaryByPlayerPuuid",
+      "fixtures": [
+        "all",
+        "ranked",
+        "normal",
+        "q_420",
+        "q_430",
+        "q_440",
+        "q_450",
+        "q_480",
+        "q_900",
+        "q_1700",
+        "q_1750",
+        "q_2300",
+        "q_2400",
+        "q_4210",
+        "q_4220",
+        "q_4240",
+        "q_4250",
+        "q_4260"
+      ],
+      "missingQueuesSearched": [490, 1900]
+    }
+  },
+  "lcu": {
+    "matchHistory": {
+      "path": "lcu/match-history",
+      "currentSummonerMatches": "current-summoner-matches.json",
+      "gameFixtures": [
+        "q_420",
+        "q_430",
+        "q_440",
+        "q_450",
+        "q_480",
+        "q_900",
+        "q_1700",
+        "q_1750",
+        "q_2300",
+        "q_2400",
+        "q_4210",
+        "q_4220",
+        "q_4240",
+        "q_4250",
+        "q_4260"
+      ],
+      "timelineFixtures": [
+        "q_420",
+        "q_430",
+        "q_440",
+        "q_450",
+        "q_480",
+        "q_900",
+        "q_1700",
+        "q_1750",
+        "q_2300",
+        "q_2400",
+        "q_4210",
+        "q_4220",
+        "q_4240",
+        "q_4250",
+        "q_4260"
+      ]
+    }
+  }
+}

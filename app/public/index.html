@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Timo · 选人助手</title><link rel="icon" href="data:,"><link rel="stylesheet" href="/style.css"><script src="/tabs.js" defer></script><script src="/app.js" defer></script></head>
+<body><main class="assistant">
+ <header><div><h1>选人助手</h1><div id="connection" class="secondary">正在连接客户端…</div></div><button type="button" id="demo-toggle" class="quiet">查看演示</button></header>
+ <div id="notice" class="notice" role="status" hidden></div>
+ <nav class="page-tabs" aria-label="页面"><button type="button" id="history-tab" data-tab="history" aria-pressed="true" aria-controls="history-panel">我的战绩</button><button type="button" id="match-tab" data-tab="match" aria-pressed="false" aria-controls="match-panel">对局</button></nav>
+ <section id="history-panel" aria-labelledby="history-tab"><div class="self-profile" id="self-profile"></div><div class="secondary self-summary" id="self-summary"></div><div id="self-matches"></div></section>
+ <section id="match-panel" aria-labelledby="match-tab" hidden>
+ <div id="waiting" class="waiting" hidden><span id="waiting-text"></span></div>
+ <div id="selection" hidden>
+  <section aria-label="英雄选择"><div class="section-label">英雄 <span id="hero-status"></span></div><div id="heroes" class="heroes"></div></section>
+  <section class="balance" aria-live="polite"><div><h2>增益 Buff</h2><div id="buffs"></div></div><div><h2>减益 Debuff</h2><div id="debuffs"></div></div></section>
+  <div class="source" id="balance-source"></div>
+  <section class="skins"><div class="section-label">已有皮肤 <span id="skin-count"></span></div><div id="skin-list" class="skin-list"></div><div id="skin-choice" class="secondary selection-note" aria-live="polite"></div></section>
+ </div>
+ <section class="team" id="match-team" hidden><div class="section-label">队友战绩 <span>最近 10 场 · 点击查看</span></div><div id="team-list" class="team-list"></div><div id="team-detail" class="team-detail" aria-live="polite" hidden></div></section>
+ </section>
+ <footer>Timo <span>v0.1.0 · 国服</span></footer>
+</main></body></html>

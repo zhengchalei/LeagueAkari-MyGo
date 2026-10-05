@@ -1,0 +1,455 @@
+<template>
+  <div class="h-full w-full">
+    <NScrollbar class="relative h-full max-w-full">
+      <div class="mx-auto max-w-200 p-6">
+        <SettingsSection :title="t('toolkit.friends.title')">
+          <div class="p-3">
+            <div class="mb-2 flex flex-wrap gap-1">
+              <NPopconfirm
+                @positive-click="deleteSelectedFriends"
+                :disabled="isLoading || !selectedFriendCount || !lcs.isConnected"
+                :positive-text="t('toolkit.friends.deleteButton')"
+                :positive-button-props="{
+                  size: 'tiny',
+                  type: 'error'
+                }"
+                :negative-button-props="{
+                  size: 'tiny'
+                }"
+              >
+                <template #trigger>
+                  <NButton
+                    :disabled="isLoading || !selectedFriendCount || !lcs.isConnected"
+                    size="small"
+                    type="error"
+                    secondary
+                  >
+                    <template v-if="selectedItems.length">{{
+                      t('toolkit.friends.deleteButtonC', { count: selectedFriendCount })
+                    }}</template>
+                    <template v-else>
+                      {{ t('toolkit.friends.deleteButton') }}
+                    </template>
+                  </NButton>
+                </template>
+                {{ t('toolkit.friends.deletePopconfirm') }}
+              </NPopconfirm>
+              <NButton
+                size="small"
+                type="warning"
+                secondary
+                v-show="isDeleting"
+                @click="isDeleting = false"
+              >
+                {{ t('toolkit.friends.cancelButton') }}
+              </NButton>
+              <NButton
+                :disabled="isLoading || !lcs.isConnected"
+                size="small"
+                secondary
+                @click="updateFriends(true)"
+              >
+                {{ t('toolkit.friends.refreshButton') }}
+              </NButton>
+              <NInput
+                v-model:value="friendSearchInput"
+                clearable
+                size="small"
+                :placeholder="t('toolkit.friends.searchPlaceholder')"
+                class="w-72!"
+              >
+                <template #prefix>
+                  <NIcon><SearchIcon /></NIcon>
+                </template>
+              </NInput>
+            </div>
+            <NDataTable
+              :theme-overrides="dataTableThemeOverrides"
+              :loading="isLoading"
+              :columns="columns"
+              :data="tableData"
+              :virtual-scroll="shouldUseVirtualScroll"
+              :row-key="(row) => row.id"
+              v-model:checked-row-keys="selectedItems"
+              v-model:expanded-row-keys="expandedRowKeys"
+              size="small"
+              :max-height="600"
+            />
+          </div>
+        </SettingsSection>
+      </div>
+    </NScrollbar>
+  </div>
+</template>
+
+<script setup lang="tsx">
+import LcuImage from '@renderer-shared/components/LcuImage.vue'
+import SettingsSection from '@renderer-shared/components/SettingsSection.vue'
+import { useActivated } from '@renderer-shared/composables/useActivated'
+import { useInstance } from '@renderer-shared/shards'
+import { useAppCommonStore } from '@renderer-shared/shards/app-common/store'
+import { LeagueClientRenderer } from '@renderer-shared/shards/league-client'
+import { useLeagueClientStore } from '@renderer-shared/shards/league-client/store'
+import { profileIconUri } from '@renderer-shared/shards/league-client/game-data-assets'
+import { LoggerRenderer } from '@renderer-shared/shards/logger'
+import { SgpRenderer } from '@renderer-shared/shards/sgp'
+import { useSgpStore } from '@renderer-shared/shards/sgp/store'
+import { Friend, FriendGroup } from '@shared/types/league-client/chat'
+import { Search as SearchIcon } from '@vicons/carbon'
+import dayjs from 'dayjs'
+import { useTranslation } from 'i18next-vue'
+import {
+  DataTableColumns,
+  NButton,
+  NDataTable,
+  NEllipsis,
+  NIcon,
+  NInput,
+  NPopconfirm,
+  NScrollbar,
+  useMessage
+} from 'naive-ui'
+import { computed, ref, shallowRef, watch } from 'vue'
+
+import { PlayerTabsRenderer } from '@main-window/shards/player-tabs'
+
+const { t } = useTranslation()
+
+const as = useAppCommonStore()
+const sgps = useSgpStore()
+const lcs = useLeagueClientStore()
+
+const lc = useInstance(LeagueClientRenderer)
+const sgp = useInstance(SgpRenderer)
+const log = useInstance(LoggerRenderer)
+
+const pt = useInstance(PlayerTabsRenderer)
+
+const { navigateToTabByPuuid } = pt.useNavigateToTab()
+
+const message = useMessage()
+
+const selectedItems = ref<string[]>([])
+const expandedRowKeys = ref<number[]>([])
+
+const isLoading = ref(false)
+const isDeleting = ref(false)
+const friendSearchInput = ref('')
+
+// puuid -> info
+const extraInfoMap = ref<
+  Record<
+    string,
+    {
+      lastGameDate?: number
+      friendsSince?: number
+    }
+  >
+>({})
+
+const renderFormattedDate = (date: number) => {
+  return (
+    <span class="text-xs text-black/80 dark:text-white/80">
+      {dayjs(date).locale(as.settings.locale.toLowerCase()).format('YYYY-MM-DD HH:mm:ss')}{' '}
+      <span class="text-[11px] text-black/45 dark:text-white/60">
+        ({dayjs(date).locale(as.settings.locale.toLowerCase()).fromNow()})
+      </span>
+    </span>
+  )
+}
+
+const renderDateField = (
+  row: any,
+  field: 'lastGameDate' | 'friendsSince',
+  fallbackText: string
+) => {
+  if (row.children) return undefined
+
+  const extraInfo = extraInfoMap.value[row.puuid]
+  if (extraInfo && extraInfo[field]) {
+    return renderFormattedDate(extraInfo[field])
+  }
+
+  return <span class="text-xs text-black/45 dark:text-white/65">{fallbackText}</span>
+}
+
+const renderGroupName = (row: any) => {
+  if (row.children) {
+    return <span class="font-bold">{row.name}</span>
+  }
+
+  return (
+    <div
+      class="inline-flex max-w-[calc(100%-40px)] cursor-pointer items-center gap-1 overflow-hidden align-middle text-sm"
+      onClick={() => navigateToTabByPuuid(row.puuid)}
+    >
+      <LcuImage class="size-4.5 shrink-0" src={profileIconUri(row.icon)} />
+      <NEllipsis class="max-w-40 min-w-0">{row.name}</NEllipsis>
+    </div>
+  )
+}
+
+const dataTableThemeOverrides = computed(() => {
+  if (as.colorTheme === 'dark') {
+    return {
+      thColor: 'rgba(23, 23, 23, 0.6)',
+      tdColor: 'rgba(23, 23, 23, 0.4)'
+    }
+  }
+
+  return {
+    thColor: 'rgba(15, 23, 42, 0.04)',
+    tdColor: 'rgba(15, 23, 42, 0.02)'
+  }
+})
+
+const columns = computed<DataTableColumns<any>>(() => [
+  {
+    type: 'selection'
+  },
+  {
+    title: () => t('toolkit.friends.columns.groupName'),
+    key: 'name',
+    className: 'whitespace-nowrap',
+    render: (row) => renderGroupName(row)
+  },
+  {
+    title: () => t('toolkit.friends.columns.lastGameDate'),
+    key: 'lastGameDate',
+    render: (row) => renderDateField(row, 'lastGameDate', t('toolkit.friends.neverPlayed'))
+  },
+  {
+    title: () => t('toolkit.friends.columns.friendSince'),
+    key: 'friendSince',
+    render: (row) => renderDateField(row, 'friendsSince', t('toolkit.friends.unknown'))
+  }
+])
+
+const tableData = computed(() => {
+  const query = friendSearchInput.value.toLowerCase().trim()
+
+  return combinedGroups.value
+    .map((group) => {
+      let filteredFriends = group.friends
+
+      if (query) {
+        filteredFriends = group.friends.filter((friend) => {
+          const gameName = friend.gameName?.toLowerCase() || ''
+          const gameTag = friend.gameTag?.toLowerCase() || ''
+          const fullName = `${gameName}#${gameTag}`.toLowerCase()
+          return fullName.includes(query)
+        })
+      }
+
+      return {
+        id: group.id,
+        name: t(`toolkit.friends.groupNames.${group.name}`, group.name),
+        children: filteredFriends
+          .map((friend) => {
+            return {
+              id: friend.id,
+              puuid: friend.puuid,
+              icon: friend.icon,
+              name: `${friend.gameName}#${friend.gameTag}`
+            }
+          })
+          .toSorted((a, b) => {
+            const aSince = extraInfoMap.value[a.puuid]?.friendsSince
+            const bSince = extraInfoMap.value[b.puuid]?.friendsSince
+
+            if (aSince && bSince) {
+              return aSince - bSince
+            } else if (aSince) {
+              return -1
+            } else if (bSince) {
+              return 1
+            } else {
+              return 0
+            }
+          })
+      }
+    })
+    .filter((group) => group.children.length > 0)
+})
+
+const selectedFriendCount = computed(() => {
+  return selectedItems.value.filter((item) => typeof item === 'string').length
+})
+
+const groups = shallowRef<FriendGroup[]>([])
+const friends = shallowRef<Friend[]>([])
+
+const combinedGroups = computed(() => {
+  const groupMap = new Map<
+    number,
+    {
+      id: number
+      priority: number
+      name: string
+      friends: Friend[]
+    }
+  >(
+    groups.value.map((group) => [
+      group.id,
+      { id: group.id, priority: group.priority, name: group.name, friends: [] }
+    ])
+  )
+
+  for (const friend of friends.value) {
+    const group = groupMap.get(friend.groupId)
+    if (group) {
+      group.friends.push(friend)
+    }
+  }
+
+  return Array.from(groupMap.values())
+    .filter((g) => g.friends.length)
+    .toSorted((a, b) => b.priority - a.priority)
+})
+
+const shouldUseVirtualScroll = computed(() => {
+  let friendsCount = 0
+  for (const group of combinedGroups.value) {
+    friendsCount += group.friends.length
+  }
+
+  return friendsCount > 48
+})
+
+const updateLastGameDate = async (puuid: string) => {
+  if (sgps.availability.serversSupported.matchHistory && sgps.isTokenReady) {
+    const { data } = await sgp.api.matchHistoryQuery.getMatchHistorySummaryByPlayerPuuid(puuid, {
+      startIndex: 0,
+      count: 1
+    })
+
+    if (data.games.length) {
+      if (!extraInfoMap.value[puuid]) {
+        extraInfoMap.value[puuid] = {}
+      }
+
+      extraInfoMap.value[puuid].lastGameDate = data.games[0].json.gameCreation
+    }
+  } else {
+    const { data } = await lc.api.matchHistory.getMatchHistory(puuid, 0, 0)
+    if (data.games.games.length) {
+      if (!extraInfoMap.value[puuid]) {
+        extraInfoMap.value[puuid] = {}
+      }
+
+      extraInfoMap.value[puuid].lastGameDate = data.games.games[0].gameCreation
+    }
+  }
+}
+
+const updateFriendSince = async () => {
+  const { data } = await lc.api.store.getGiftableFriends()
+
+  const puuidMap: Record<number, string> = {}
+  friends.value.forEach((friend) => {
+    puuidMap[friend.summonerId] = friend.puuid
+  })
+
+  for (const f of data) {
+    const puuid = puuidMap[f.summonerId]
+    if (puuid) {
+      if (!extraInfoMap.value[puuid]) {
+        extraInfoMap.value[puuid] = {}
+      }
+
+      extraInfoMap.value[puuid].friendsSince = new Date(f.friendsSince).getTime()
+    }
+  }
+}
+
+const updateFriends = async (manually = false) => {
+  if (isLoading.value) {
+    return
+  }
+
+  try {
+    isLoading.value = true
+
+    const { data: groupsD } = await lc.api.chat.getFriendGroups()
+    const { data: friendsD } = await lc.api.chat.getFriends()
+
+    selectedItems.value = []
+    groups.value = groupsD
+    friends.value = friendsD
+    expandedRowKeys.value = groupsD.map((group) => group.id)
+
+    const _updateExtraInfo = async () => {
+      for (const friend of friendsD) {
+        try {
+          await updateLastGameDate(friend.puuid)
+        } catch {}
+      }
+    }
+
+    _updateExtraInfo()
+    updateFriendSince().catch(() => {})
+
+    if (manually) {
+      message.success(() => t('toolkit.friends.refreshSuccess'))
+    }
+  } catch (error: any) {
+    message.warning(() => t('toolkit.claim.missions.refreshFailed', { reason: error.message }))
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const deleteSelectedFriends = async () => {
+  if (isLoading.value) {
+    return
+  }
+
+  try {
+    isLoading.value = true
+    isDeleting.value = true
+
+    // 建立在: group 以 number 为 key, friend 以 string 为 key
+    const filtered = selectedItems.value.filter((item) => typeof item === 'string')
+
+    for (const friendId of filtered) {
+      if (!isDeleting.value) {
+        break
+      }
+
+      await lc.api.chat.deleteFriend(friendId)
+      log.infoRenderer('comp:FriendTools', 'deleted', friendId)
+    }
+
+    message.success(() => t('toolkit.friends.deleteSuccess', { count: filtered.length }))
+  } catch (error: any) {
+    message.warning(() => t('toolkit.claim.missions.refreshFailed', { reason: error.message }))
+  } finally {
+    isLoading.value = false
+    isDeleting.value = false
+  }
+}
+
+lc.onLcuEventVue<Friend>('/lol-chat/v1/friends/:id', ({ eventType, data }, { id }) => {
+  if (eventType === 'Delete') {
+    friends.value = friends.value.filter((friend) => friend.id !== id)
+    selectedItems.value = []
+  } else if (eventType === 'Update') {
+    const index = friends.value.findIndex((friend) => friend.id === id)
+    if (index !== -1) {
+      friends.value[index] = data
+    }
+  }
+})
+
+const isActivated = useActivated()
+
+watch(
+  [() => lcs.isConnected, () => isActivated.value],
+  ([isConnected, isActivated]) => {
+    if (isConnected && isActivated) {
+      updateFriends()
+    }
+  },
+  { immediate: true }
+)
+</script>

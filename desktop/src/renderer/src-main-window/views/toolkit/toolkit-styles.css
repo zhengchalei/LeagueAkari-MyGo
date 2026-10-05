@@ -1,0 +1,24 @@
+.single-root {
+  width: 100%;
+  height: 100%;
+}
+
+.outer-wrapper {
+  position: relative;
+  height: 100%;
+  max-width: 100%;
+}
+
+.inner-wrapper {
+  padding: 24px;
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.inner-wrapper :deep(.n-card) {
+  background-color: transparent;
+}
+
+.tool:not(:last-child) {
+  margin-bottom: 8px;
+}

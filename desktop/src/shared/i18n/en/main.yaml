@@ -1,0 +1,192 @@
+tray:
+  about: About
+  settings: Settings
+  quit: Quit
+  auxWindow: Aux Window
+  opggWindow: OP.GG Window
+  dev:
+    toggleMainWindowDevtools: Toggle DevTools - Main Window
+    toggleAuxWindowDevtools: Toggle DevTools - Aux Window
+    toggleOpggWindowDevtools: Toggle DevTools - OP.GG Window
+    toggleOngoingGameWindowDevtools: Toggle DevTools - Ongoing Game Window
+    toggleCdTimerWindowDevtools: Toggle DevTools - Cooldown Timer Window
+  adjustAllWindowPositions: Adjust All Window Positions
+
+windowOpenHandler:
+  toAkari: To $t(common:appName) GitHub ❤️
+  toExternalLink: To external site {{target}}
+
+auto-gameflow-main:
+  error-auto-honor: 'Auto honor failed: {{reason}}'
+  error-accept-match: 'Auto accept match failed: {{reason}}'
+  error-matchmaking: 'Auto matchmaking could not start: {{reason}}'
+  auto-matchmaking-canceled: Auto matchmaking canceled
+  auto-matchmaking-canceled-wait-for-invitees: Auto matchmaking canceled, waiting for invitees
+  auto-matchmaking-canceled-not-leader: Auto matchmaking canceled, you are not the room leader
+  auto-matchmaking-canceled-wait-for-penalty: Auto matchmaking canceled, waiting for penalty timer
+  auto-matchmaking-in: Auto matchmaking in {{seconds}} seconds
+  skip-leader: Attempting to skip becoming the leader
+  aram-team-side-1: Your team is in 🟦blue (↙️ left bottom)
+  aram-team-side-1-tw: Your team is in 🟦blue (↙️ left bottom)
+  aram-team-side-2: Your team is in 🟥red (↗️ right top)
+  aram-team-side-2-tw: Your team is in 🟥red (↗️ right top)
+  auto-invitation-sent: '[$t(common:appName)] Invitation sent to {{name}}'
+
+auto-select-main:
+  error-pick: 'Failed to auto pick champion, target champion {{champion}}: {{reason}}'
+  error-intent: 'Failed to auto intent champion, target champion {{champion}}: {{reason}}'
+  error-ban: 'Failed to auto ban champion, target champion {{champion}}: {{reason}}'
+  error-bench-swap: 'Failed to auto swap champion, target champion {{champion}}: {{reason}}'
+  cancel-bench-swap: Selection of {{champion}} has been canceled
+  bench-swap: Will swap {{champion}} in {{seconds}} seconds
+  accept-champion-swap: Will accept swap request for {{champion}} in {{seconds}} seconds
+  decline-champion-swap: Will decline swap request for {{champion}} in {{seconds}} seconds
+  show-ban: Will show ban {{champion}} in {{seconds}} seconds
+  complete-ban: Will complete ban {{champion}} in {{seconds}} seconds
+  show-pick: Will show pick {{champion}} in {{seconds}} seconds
+  complete-pick: Will complete pick {{champion}} in {{seconds}} seconds
+  intent-pick: Will intent pick {{champion}} in {{seconds}} seconds
+  user-takeover: User intervened in the automatic process
+
+self-update-main:
+  title: Self Update
+  start-update: Starting update $t(common:appName)
+  updateOnQuit: Updated Applied. Restart the application to apply the update
+  lastUpdateSuccess: Updated to {{version}}
+
+auto-champ-config-main:
+  summonerSpells:
+    applied: '{{name}} summoner spells have been updated to [{{spell1}}] [{{spell2}}]'
+    appliedWithPosition: '{{name}} - {{position}} summoner spells have been updated to [{{spell1}}] [{{spell2}}]'
+    errorApplied: 'Failed to update summoner spells for {{name}}'
+    errorAppliedWithPosition: 'Failed to update summoner spells for {{name}} - {{position}}'
+
+  runes:
+    pageName: '{{name}}'
+    pageNameWithPosition: '{{name}} - {{position}}'
+    applied: '{{name}} rune setup has been updated to {{primary}} / {{sub}} ({{all}})'
+    appliedWithPosition: '{{name}} - {{position}} rune setup has been updated to {{primary}} / {{sub}} ({{all}})'
+    errorApplied: 'Failed to update rune setup for {{name}}'
+    errorAppliedWithPosition: 'Failed to update rune setup for {{name}} - {{position}}'
+
+  auto-config-enabled-no-champion: Auto configuration enabled, but no champion has been configured
+  auto-config-enabled: 'Auto configuration enabled, configured champions: {{names}}'
+
+window-manager-main:
+  aux-window:
+    quickClose:
+      title: Don't want mini window?
+      body: You can permanently disable the mini window in the settings (Settings > Multi-window)
+  download:
+    dialogTitle: Save File
+    dialogButtonLabel: Save
+
+ongoing-game-main:
+  taggedPlayer: Tagged Player
+
+client-installation-main:
+  jumpList:
+    launchTcls:
+      title: Launch TCLS Client
+      description: Open League Akari and launch TCLS client
+    launchRiot:
+      title: Launch Riot Client
+      description: Open League Akari launch Riot client
+    launchWeGame:
+      title: Launch WeGame
+      description: Open League Akari and launch WeGame
+
+in-game-send-main:
+  presets:
+    punctuation:
+      lineSeparator: ': '
+      listSeparator: ', '
+      memberSeparator: ', '
+      groupSeparator: ' '
+    common:
+      unknownPosition: Unknown Position
+      unsetChampion: Champion Pending
+      championId: Champion {{id}}
+      playerBaseLine: '{{position}} {{player}} | {{champion}}'
+      currentChampion: Current Champion
+      thisChampion: this champion
+      noChampionSelected: No champion selected
+      noMainChampions: No clear main champions
+      championWithPlayer: '{{champion}} ({{player}})'
+      target:
+        friendly: Allied
+        enemy: Enemy
+        all: All
+      team:
+        friendly: Allied
+        enemy: Enemy
+        labelWithName: '{{side}} · {{team}}'
+      selection:
+        empty: '[Selected: none]'
+        summary: '[Selected: {{parts}}]'
+        teamPart: '{{team}} {{count}}'
+        partSeparator: ' / '
+    rating:
+      noRecentMatches: No recent matches
+      noChampionMatches: No recent matches on {{champion}}
+      matchCount_one: '{{count}} match'
+      matchCount_other: '{{count}} matches'
+      championMatchCount_one: '{{count}} match on {{champion}}'
+      championMatchCount_other: '{{count}} matches on {{champion}}'
+      countWithStats: '{{countText}}, {{stats}}'
+      metrics:
+        winRate: Win Rate {{value}}
+        kda: KDA {{value}}
+        avgSoloKills: Avg Solo Kills {{value}}
+        avgVisionScore: Vision {{value}}
+        avgChampionDamage: Damage {{value}}
+        avgDamageTaken: Taken {{value}}
+        avgGold: Gold {{value}}
+        avgCsPerMinute: CS {{value}}/min
+        avgKillParticipation: KP {{value}}
+        avgDamageGoldEfficiency: Damage/Gold {{value}}
+        mainChampions: Main Champions [{{champions}}]
+        mainPositions: Main Positions [{{positions}}]
+    jungle:
+      noRecords: No jungle-detail records
+      noChampionRecords: No jungle-detail records on {{champion}}
+      sampleCount_one: '{{count}} jungle sample'
+      sampleCount_other: '{{count}} jungle samples'
+      championSampleCount_one: '{{count}} jungle sample on {{champion}}'
+      championSampleCount_other: '{{count}} jungle samples on {{champion}}'
+      firstDragonAverageTime: ', first dragon avg {{time}}'
+      camps:
+        blue: Blue Buff
+        red: Red Buff
+        wolves: Wolves
+        raptors: Raptors
+      campRate: '{{camp}} {{rate}}'
+      lanes:
+        top: top
+        mid: mid
+        bot: bot
+      lanePreference:
+        unclear: no clear lane preference
+        single: favors {{lane}}
+        double: favors {{first}}/{{second}}
+      firstClear:
+        normal: standard
+        invade: invade
+        blue: blue-side
+        red: red-side
+        pattern: '{{side}} {{kind}} {{rate}}{{distribution}}'
+      metrics:
+        activityPreference: Early {{preference}}, top {{top}} mid {{mid}} bot {{bot}}
+        level3Gank: Lv3 gank {{value}}
+        level4Gank: Lv4 gank {{value}}
+        firstDragon: First dragon {{value}}{{time}}
+        avgDragons: Avg dragons {{value}}
+        monsterControl: Objectives voidgrubs {{voidgrubs}}/heralds {{heralds}}/barons {{barons}}
+        mainChampions: Main Champions [{{champions}}]
+    premade:
+      blueTeamTitle: Blue premades
+      redTeamTitle: Red premades
+      teamTitle: Premades
+      blueTeamEmpty: No blue premades
+      redTeamEmpty: No red premades
+      empty: No premade groups

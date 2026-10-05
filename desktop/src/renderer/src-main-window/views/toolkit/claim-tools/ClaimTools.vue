@@ -1,0 +1,20 @@
+<template>
+  <div class="h-full w-full">
+    <NScrollbar class="relative h-full max-w-full">
+      <div class="mx-auto flex max-w-[800px] flex-col gap-6 p-6">
+        <RewardClaimTool />
+        <MissionClaimTool />
+        <!-- 和 Rewards 里面重叠, 因此只需要一个就行了 -->
+        <EventHubClaimTool />
+      </div>
+    </NScrollbar>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { NScrollbar } from 'naive-ui'
+
+import EventHubClaimTool from './EventHubClaimTool.vue'
+import MissionClaimTool from './MissionClaimTool.vue'
+import RewardClaimTool from './RewardClaimTool.vue'
+</script>

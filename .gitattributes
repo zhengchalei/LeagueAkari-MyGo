@@ -1,0 +1,6 @@
+* text=auto
+# Preserve vendored Yarn and registry helpers without reformatting their contents.
+desktop/.yarn/releases/** -whitespace
+desktop/resources/regedit-vbs/** -whitespace
+# The markdown demo intentionally preserves trailing spaces for line breaks.
+desktop/src/renderer/src-main-window/views/test/example-markdown.ts -whitespace

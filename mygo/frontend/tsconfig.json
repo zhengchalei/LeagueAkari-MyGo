@@ -1,0 +1,29 @@
+{
+  "extends": "../../desktop/tsconfig.web.json",
+  "include": [
+    "*.ts",
+    "../../desktop/src/renderer/env.d.ts",
+    "../../desktop/src/preload/*.d.ts",
+    "../../desktop/node_modules/@modyfi/vite-plugin-yaml/modules.d.ts"
+  ],
+  "exclude": ["vite.config.ts", "vitest.config.ts", "*.test.ts"],
+  "compilerOptions": {
+    "composite": false,
+    "types": [],
+    "typeRoots": ["../../desktop/node_modules/@types"],
+    "paths": {
+      "@main-window/*": ["../../desktop/src/renderer/src-main-window/*"],
+      "@aux-window/*": ["../../desktop/src/renderer/src-aux-window/*"],
+      "@opgg-window/*": ["../../desktop/src/renderer/src-opgg-window/*"],
+      "@ongoing-game-window/*": [
+        "../../desktop/src/renderer/src-ongoing-game-window/*"
+      ],
+      "@cd-timer-window/*": [
+        "../../desktop/src/renderer/src-cd-timer-window/*"
+      ],
+      "@shared/*": ["../../desktop/src/shared/*"],
+      "@renderer-shared/*": ["../../desktop/src/renderer-shared/*"],
+      "*": ["../../desktop/node_modules/*"]
+    }
+  }
+}

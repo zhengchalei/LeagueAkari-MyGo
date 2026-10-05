@@ -1,0 +1,29 @@
+{
+  "extends": "@electron-toolkit/tsconfig/tsconfig.node.json",
+  "include": [
+    "electron.vite.config.*",
+    "src/main/**/*",
+    "src/preload/*",
+    "src/shared/**/*",
+    "native/**/*.ts"
+  ],
+  "compilerOptions": {
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "composite": true,
+    "types": ["electron-vite/node", "@modyfi/vite-plugin-yaml/modules"],
+    "paths": {
+      "@shared/*": ["./src/shared/*"],
+      "@main/*": ["./src/main/*"],
+      "league-akari-native-win32": ["./native/win32-x64/lib/index.ts"],
+      "league-akari-native-win32/*": ["./native/win32-x64/lib/*"]
+    },
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "strictPropertyInitialization": false,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  }
+}

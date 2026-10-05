@@ -1,0 +1,47 @@
+import { createManager } from '@renderer-shared/shards'
+import { AkariApiRenderer } from '@renderer-shared/shards/akari-api'
+import { AkariProtocolRenderer } from '@renderer-shared/shards/akari-protocol'
+import { AppCommonRenderer } from '@renderer-shared/shards/app-common'
+import { AkariIpcRenderer } from '@renderer-shared/shards/ipc'
+import {
+  LeagueClientRenderer,
+  LeagueClientRendererConfig
+} from '@renderer-shared/shards/league-client'
+import { LoggerRenderer } from '@renderer-shared/shards/logger'
+import { PiniaMobxUtilsRenderer } from '@renderer-shared/shards/pinia-mobx-utils'
+import { SettingUtilsRenderer } from '@renderer-shared/shards/setting-utils'
+import { SetupInAppScopeRenderer } from '@renderer-shared/shards/setup-in-app-scope'
+import { SgpRenderer } from '@renderer-shared/shards/sgp'
+import { WindowManagerRenderer } from '@renderer-shared/shards/window-manager'
+
+import { AdditionalInfoShard } from './additional-info'
+
+const manager = createManager()
+
+manager.use(AdditionalInfoShard)
+manager.use(AkariIpcRenderer)
+manager.use(AkariApiRenderer)
+manager.use(AkariProtocolRenderer)
+manager.use(AppCommonRenderer)
+manager.use(LeagueClientRenderer, {
+  // for better performance
+  subscribeState: {
+    gameData: true,
+    gameflow: true,
+    summoner: true,
+    matchmaking: false,
+    lobby: false,
+    login: false,
+    champSelect: false,
+    chat: false,
+    honor: false
+  }
+} as LeagueClientRendererConfig)
+manager.use(LoggerRenderer)
+manager.use(PiniaMobxUtilsRenderer)
+manager.use(SettingUtilsRenderer)
+manager.use(SetupInAppScopeRenderer)
+manager.use(SgpRenderer)
+manager.use(WindowManagerRenderer)
+
+export { manager }

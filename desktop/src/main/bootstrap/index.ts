@@ -1,0 +1,470 @@
+import { is, optimizer } from '@electron-toolkit/utils'
+import '@main/i18n'
+import { initAppLogger } from '@main/logger'
+import { isElevated } from '@main/native'
+import { AkariApiMain } from '@main/shards/akari-api'
+import { AkariProtocolMain } from '@main/shards/akari-protocol'
+import { AppCommonMain } from '@main/shards/app-common'
+import { AutoChampionConfigMain } from '@main/shards/auto-champ-config'
+import { AutoGameflowMain } from '@main/shards/auto-gameflow'
+import { AutoMiscMain } from '@main/shards/auto-misc'
+import { AutoSelectMain } from '@main/shards/auto-select'
+import { ClientInstallationMain } from '@main/shards/client-installation'
+import { ConfigMigrateMain } from '@main/shards/config-migrate'
+import { ExtraAssetsMain } from '@main/shards/extra-assets'
+import { GameClientMain } from '@main/shards/game-client'
+import { InGameSendMain } from '@main/shards/in-game-send'
+import { AkariIpcMain } from '@main/shards/ipc'
+import { KeyboardShortcutsMain } from '@main/shards/keyboard-shortcuts'
+import { LeagueClientMain } from '@main/shards/league-client'
+import { LeagueClientUxMain } from '@main/shards/league-client-ux'
+import { LoggerFactoryMain } from '@main/shards/logger-factory'
+import { MobxUtilsMain } from '@main/shards/mobx-utils'
+import { OngoingGameMain } from '@main/shards/ongoing-game'
+import { RemoteConfigMain } from '@main/shards/remote-config'
+import { RendererDebugMain } from '@main/shards/renderer-debug'
+import { RespawnTimerMain } from '@main/shards/respawn-timer'
+import { RiotClientMain } from '@main/shards/riot-client'
+import { SavedPlayerMain } from '@main/shards/saved-player'
+import { SelfUpdateMain } from '@main/shards/self-update'
+import { SettingFactoryMain } from '@main/shards/setting-factory'
+import { SgpMain } from '@main/shards/sgp'
+import { StatisticsMain } from '@main/shards/statistics'
+import { StorageMain } from '@main/shards/storage'
+import { TrayMain } from '@main/shards/tray'
+import { WindowManagerMain } from '@main/shards/window-manager'
+import { DEEP_LINK_PROTOCOL } from '@main/utils/deep-link'
+import { AkariManager } from '@shared/akari-shard'
+import { BaseConfig } from '@shared/types/common'
+import { formatError } from '@shared/utils/errors'
+import dayjs from 'dayjs'
+import 'dayjs/locale/zh-cn'
+import duration from 'dayjs/plugin/duration'
+import relativeTime from 'dayjs/plugin/relativeTime'
+import { app, dialog } from 'electron'
+import { configure } from 'mobx'
+import EventEmitter from 'node:events'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { Logger } from 'winston'
+
+import { readBaseConfig, writeBaseConfig } from './base-config'
+
+interface AkariAppEventMap {
+  'second-instance': [commandLine: string[], workingDirectory: string]
+  'log-level-changed': [level: string]
+
+  /** 当其他实例附带参数时 */
+  'second-instance-deep-link': [url: string]
+}
+
+declare module '@shared/akari-shard' {
+  interface AkariSharedGlobal {
+    /**
+     * 应用日志记录对象
+     */
+    logger: Logger
+
+    /**
+     * 日志文件名
+     */
+    logFilename: string
+
+    /**
+     * 特殊事件总线
+     */
+    events: EventEmitter<AkariAppEventMap>
+
+    /**
+     * 是否是管理员权限
+     */
+    isElevated: boolean
+
+    /**
+     * 平台，目前仅支持 win32 和 darwin。仅完全支持 win32
+     */
+    platform: 'darwin' | 'win32' | 'unknown'
+
+    /**
+     * 是否是 Windows 11 22H2 或更高版本
+     */
+    isWindows11_22H2_OrHigher: boolean
+
+    /**
+     * 基础全局设置
+     */
+    baseConfig: {
+      value: BaseConfig | null
+      write: (config: Partial<BaseConfig>) => void
+    }
+
+    /**
+     * 跟随本次启动而来的 deep link
+     */
+    startupDeepLink: string | null
+
+    version: string
+
+    /**
+     * 指示应用是否正在可以退出的流程中
+     */
+    isReadyToQuit: boolean
+
+    /**
+     * 退出应用
+     */
+    quit: () => void
+
+    /**
+     * app.relaunch() + app.quit()
+     * @returns
+     */
+    restart: () => void
+
+    /**
+     * 获取日志级别, 文件 transport 层面的
+     * @returns 日志级别
+     */
+    getLogLevel: () => string
+
+    /**
+     * 设置日志级别, 会触发 'log-level-changed' 事件
+     * @param level 日志级别
+     */
+    setLogLevel: (level: string) => void
+  }
+}
+
+function handleUnhandledErrors(logger: Logger) {
+  process.on('uncaughtException', (error) => {
+    logger.error({
+      message: `Unexpected unhandled error ${formatError(error)}`,
+      namespace: 'error-handling'
+    })
+    dialog.showErrorBox('Uncaught Exception', formatError(error))
+    app.exit(10003)
+  })
+
+  process.on('unhandledRejection', (error) => {
+    logger.warn({
+      message: `Unexpected Rejection ${formatError(error)}`,
+      namespace: 'error-handling'
+    })
+  })
+}
+
+function formatShardInitializationReport(manager: AkariManager) {
+  const report = manager._getInitializationReport()
+  const { order, summary, timings } = report
+  const timingById = new Map(timings.map((timing) => [timing.id, timing]))
+
+  const orderText = order
+    .map((id) => {
+      const timing = timingById.get(id)
+      if (!timing) {
+        return `${id.toString()}(-)`
+      }
+
+      const status = timing.ok ? '' : ' failed'
+      return `${id.toString()}(${timing.durationMs.toFixed(2)}ms${status})`
+    })
+    .join(' -> ')
+
+  const slowestText = summary.slowestShard
+    ? `${summary.slowestShard.id.toString()}(${summary.slowestShard.durationMs.toFixed(2)}ms)`
+    : 'none'
+
+  return [
+    `Shard initialization report: ${summary.shardCount} initialized shards in ${summary.totalDurationMs.toFixed(2)}ms`,
+    `Initialization order: ${orderText}`,
+    `Slowest shard initialization: ${slowestText}`
+  ].join('\n')
+}
+
+function logShardInitializationReport(logger: Logger, manager: AkariManager) {
+  logger.info({
+    message: formatShardInitializationReport(manager),
+    namespace: 'akari-shard-manager'
+  })
+}
+
+/**
+ * 支持 Mica 的版本
+ */
+export function isWindows11_22H2_OrHigher() {
+  const release = os.release() // e.g., '10.0.22621'
+  const [major, minor, build] = release.split('.').map(Number)
+
+  // Check if it's Windows 11 (major 10, minor 0) and build is 22621 or higher
+  if (major === 10 && minor === 0 && build >= 22621) {
+    return true
+  }
+  return false
+}
+
+/**
+ * 应用级别的初始化启动细节，基础组件注入和基础事件处理
+ */
+export function bootstrap() {
+  // transparent window 的 show 和 hide 会引起奇妙闪烁, 添加这个属性以禁用窗口动画
+  app.commandLine.appendSwitch('wm-window-animations-disabled')
+
+  if (is.dev) {
+    app.commandLine.appendSwitch('remote-debugging-port', '8944')
+  }
+
+  // 基础设置
+  const baseConfig = readBaseConfig()
+
+  // 创建全局唯一的日志器
+  const logLevel = baseConfig && baseConfig.logLevel ? baseConfig.logLevel : 'info'
+  const { logger, filename: logFilename, setLevel, getLevel } = initAppLogger(logLevel)
+
+  // 应用级别的事件总线
+  const events = new EventEmitter<AkariAppEventMap>()
+
+  // 基础全局设置
+  EventEmitter.defaultMaxListeners = 1e5
+  dayjs.extend(relativeTime)
+  dayjs.extend(duration)
+
+  // mobx 设置
+  configure({ enforceActions: 'observed' })
+
+  // 注册 akari 协议的支持, 是 HTTP 请求的代理
+  AkariProtocolMain.register()
+
+  logger.info({
+    message: `League Akari ${app.getVersion()}`,
+    namespace: 'app'
+  })
+
+  logger.info({
+    message: `Platform: ${os.platform()}, Release: ${os.release()}`,
+    namespace: 'app'
+  })
+
+  logger.info({
+    message: `Log Level: ${logLevel}`,
+    namespace: 'app'
+  })
+
+  try {
+    if (
+      baseConfig &&
+      baseConfig.disableHardwareAcceleration &&
+      baseConfig.disableHardwareAcceleration === true
+    ) {
+      app.disableHardwareAcceleration()
+    }
+
+    // 处理应用级别的错误
+    handleUnhandledErrors(logger)
+
+    // 启用所有 akari shard
+    const manager = new AkariManager()
+    manager.global.logger = logger
+    manager.global.logFilename = logFilename
+    manager.global.events = events
+    manager.global.baseConfig = {
+      value: baseConfig,
+      write: (config: any) => writeBaseConfig(config)
+    }
+    manager.global.isElevated = isElevated
+    manager.global.platform = os.platform() as 'darwin' | 'win32'
+    manager.global.version = app.getVersion()
+    manager.global.isWindows11_22H2_OrHigher = isWindows11_22H2_OrHigher()
+    manager.global.isReadyToQuit = false
+    manager.global.quit = () => app.quit()
+    manager.global.restart = () => {
+      app.relaunch()
+      app.exit()
+    }
+    manager.global.getLogLevel = getLevel
+    manager.global.setLogLevel = (level: string) => {
+      setLevel(level)
+      writeBaseConfig({ logLevel: level })
+      events.emit('log-level-changed', level)
+    }
+
+    if (isElevated) {
+      logger.info({
+        message: `Application started with administrator privileges`,
+        namespace: 'app'
+      })
+    }
+
+    // basic fundamental shards
+    manager.use(AkariApiMain)
+    manager.use(AkariIpcMain)
+    manager.use(AppCommonMain)
+    manager.use(LoggerFactoryMain)
+    manager.use(MobxUtilsMain)
+
+    // connection & data provider shards
+    manager.use(ConfigMigrateMain)
+    manager.use(SettingFactoryMain)
+    manager.use(StorageMain)
+
+    manager.use(AkariProtocolMain)
+    manager.use(GameClientMain)
+    manager.use(LeagueClientMain)
+    manager.use(LeagueClientUxMain)
+    manager.use(RiotClientMain)
+
+    // application specific shards
+    manager.use(ClientInstallationMain)
+    manager.use(WindowManagerMain)
+    manager.use(TrayMain)
+    manager.use(KeyboardShortcutsMain)
+    manager.use(SelfUpdateMain)
+
+    // functional shards
+    manager.use(AutoChampionConfigMain)
+    manager.use(AutoGameflowMain)
+    manager.use(AutoMiscMain)
+    manager.use(AutoSelectMain)
+    manager.use(InGameSendMain)
+    manager.use(OngoingGameMain)
+    manager.use(RemoteConfigMain)
+    manager.use(RespawnTimerMain)
+    manager.use(SavedPlayerMain)
+    manager.use(SgpMain)
+    manager.use(StatisticsMain)
+
+    // other
+    manager.use(ExtraAssetsMain)
+    manager.use(RendererDebugMain)
+
+    // external shards
+    const shardsDir = path.join(app.getPath('exe'), '..', 'shards')
+    if (fs.existsSync(shardsDir)) {
+      const files = fs.readdirSync(shardsDir)
+      for (const file of files) {
+        if (file.endsWith('.js')) {
+          const shard = require(path.join(shardsDir, file))
+          manager.useExternal(shard)
+
+          logger.info({
+            message: `Loaded external shard ${file}`,
+            namespace: 'akari-shard-manager'
+          })
+        }
+      }
+    }
+
+    if (process.defaultApp) {
+      const appPath = path.resolve(process.argv[1])
+      app.setAsDefaultProtocolClient(DEEP_LINK_PROTOCOL, process.execPath, [appPath])
+    } else {
+      app.setAsDefaultProtocolClient(DEEP_LINK_PROTOCOL)
+    }
+
+    const getDeepLinkArg = (argv: string[]) => {
+      const urlArg = argv.find(
+        (a) => typeof a === 'string' && a.startsWith(`${DEEP_LINK_PROTOCOL}://`)
+      )
+
+      return urlArg || null
+    }
+
+    const deepLinkArg = getDeepLinkArg(process.argv)
+    if (deepLinkArg) {
+      manager.global.startupDeepLink = deepLinkArg
+    }
+
+    app.on('second-instance', (_event, commandLine, workingDirectory) => {
+      events.emit('second-instance', commandLine, workingDirectory)
+
+      logger.info({
+        message: `Second instance detected with command line: ${commandLine.join(' ')}`,
+        namespace: 'app'
+      })
+
+      const deepLinkArg = getDeepLinkArg(commandLine)
+      if (deepLinkArg) {
+        events.emit('second-instance-deep-link', deepLinkArg)
+      }
+    })
+
+    // 建立在如下假设：主窗口永远不会关闭（而是隐藏）
+    app.on('window-all-closed', () => {
+      app.quit()
+    })
+
+    app.on('before-quit', () => {
+      manager.global.isReadyToQuit = true
+    })
+
+    app.on('activate', () => {
+      const wm = manager.getInstance(WindowManagerMain.id) as WindowManagerMain
+
+      if (wm) {
+        wm.mainWindow.showOrRestore()
+      }
+    })
+
+    app.whenReady().then(async () => {
+      try {
+        await manager.setup()
+        logShardInitializationReport(logger, manager)
+      } catch (error) {
+        logShardInitializationReport(logger, manager)
+        logger.error({
+          message: `[10002] Error occurred during feature initialization ${formatError(error)}`,
+          namespace: 'akari-shard-manager'
+        })
+        dialog.showErrorBox('Error occurred during feature initialization', formatError(error))
+        logger.on('finish', () => app.exit(10002))
+        logger.end()
+      }
+    })
+
+    app.on('browser-window-created', (_, window) => {
+      optimizer.watchWindowShortcuts(window)
+    })
+
+    let shardDisposed = false
+    app.on('will-quit', (e) => {
+      if (shardDisposed) {
+        return
+      }
+
+      e.preventDefault()
+
+      manager
+        .dispose()
+        .catch((error) => {
+          logger.error({
+            message: `Error occurred during application exit ${formatError(error)}`,
+            namespace: 'akari-shard-manager'
+          })
+        })
+        .finally(() => {
+          shardDisposed = true
+          events.removeAllListeners()
+          logger.info({
+            message: `Application is about to exit`,
+            namespace: 'app'
+          })
+          logger.on('finish', () => app.exit()) // 不知为何, 使用 app.quit() 在这里不会生效. 除非包裹 setImmediate 或 setTimeout
+          logger.end()
+        })
+    })
+
+    process.on('exit', () => {
+      console.log(
+        `\x1b[1m\x1b[92m[${dayjs().format('YYYY-MM-DD HH:mm:ss:SSS')}] [finale] Application exited\x1b[0m`
+      )
+    })
+  } catch (error) {
+    logger.error({
+      message: `[10001] Error occurred during application startup ${formatError(error)}`,
+      namespace: 'app'
+    })
+    dialog.showErrorBox('Error occurred during application startup', formatError(error))
+    logger.on('finish', () => app.exit(10001))
+    logger.end()
+  }
+}
