@@ -7,4 +7,5 @@ export async function syncExtraAssetsState(context: ExtraAssetsRendererContext) 
   await context.piniaMobxUtils.sync(EXTRA_ASSETS_MAIN_NAMESPACE, 'gtimg', store.gtimg)
   await context.piniaMobxUtils.sync(EXTRA_ASSETS_MAIN_NAMESPACE, 'fandom', store.fandom)
   await context.piniaMobxUtils.sync(EXTRA_ASSETS_MAIN_NAMESPACE, 'opgg', store.opgg)
+  await context.piniaMobxUtils.sync(EXTRA_ASSETS_MAIN_NAMESPACE, 'kiwi', store.kiwi)
 }

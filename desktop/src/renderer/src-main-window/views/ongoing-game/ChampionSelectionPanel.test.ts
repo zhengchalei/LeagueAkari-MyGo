@@ -50,7 +50,10 @@ vi.mock('@aux-window/composables/useFandomBalanceData', () => ({
   useChampionBalanceData: () => ({ data: mocks.balance })
 }))
 vi.mock('i18next-vue', () => ({
-  useTranslation: () => ({ t: (key: string) => key })
+  useTranslation: () => ({
+    t: (key: string, values?: { source?: string }) =>
+      values?.source ? `${key}: ${values.source}` : key
+  })
 }))
 vi.mock('naive-ui', async () => {
   const { defineComponent, h } = await import('vue')
@@ -222,6 +225,57 @@ describe('champion and owned skin selection', () => {
   })
 
   afterEach(() => mountedPanels.splice(0).forEach((unmount) => unmount()))
+
+  it('shows KIWI buffs and nerfs with source version and preserves fractional site values', async () => {
+    mocks.store.gameflow.session.gameData.queue.gameMode = 'KIWI'
+    mocks.balance.value = {
+      103: {
+        modes: {
+          KIWI: {
+            source: 'Bilibili RESG',
+            sourceUrl: 'https://www.bilibili.com/toy/resg/index.html',
+            version: '16.19',
+            cached: true,
+            adjustments: [
+              { type: 'damage-taken', value: 0.9, display: 'percentage', effect: 'buffed' },
+              { type: 'ability-haste', value: -20, display: 'literal', effect: 'nerfed' },
+              {
+                type: 'attack-speed-growth',
+                value: 2.5,
+                display: 'literal',
+                effect: 'buffed',
+                formattedValue: '+2.5%'
+              },
+              { type: 'special', value: 0, effect: 'neutral', description: '特殊调整：保留原文' }
+            ]
+          }
+        }
+      }
+    }
+    const root = renderPanel()
+    await settleRender()
+    const text = nodesMatching(root, (node) => node.type !== 'comment')
+      .map((node) => node.text)
+      .join(' ')
+    expect(text).toContain('auxWindow.championBench.balanceTypes.damage-taken 90%')
+    expect(text).toContain('auxWindow.championBench.balanceTypes.ability-haste -20')
+    expect(text).toContain('auxWindow.championBench.balanceTypes.attack-speed-growth +2.5%')
+    expect(text).toContain('Bilibili RESG')
+    expect(text).toContain('16.19')
+    expect(text).toContain('timo.selection.cached')
+    expect(text).toContain('特殊调整：保留原文')
+    expect(text).not.toContain('OP.GG')
+
+    mocks.balance.value = {
+      103: { modes: { KIWI: { source: 'Bilibili RESG', version: '16.19', adjustments: [] } } }
+    }
+    await nextTick()
+    const nextText = nodesMatching(root, (node) => node.type !== 'comment')
+      .map((node) => node.text)
+      .join(' ')
+    expect(nextText).toContain('timo.selection.sourceNoChanges')
+    expect(nextText).not.toContain('timo.selection.noBalance')
+  })
 
   it('shows all three personal choices when the host replaces the raw nested state', async () => {
     mocks.store.champSelect.currentChampion = null

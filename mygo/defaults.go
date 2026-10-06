@@ -27,6 +27,10 @@ func staticStates() map[string]object {
 	}
 	states["extra-assets-main:gtimg"] = object{"heroList": nil, "kiwiAugments": nil}
 	states["extra-assets-main:fandom"] = object{"balance": nil}
+	kiwi := object{}
+	_ = json.Unmarshal(kiwiBalanceSnapshot, &kiwi)
+	kiwi["cached"] = true
+	states["extra-assets-main:kiwi"] = kiwi
 	states["client-installation-main:state"] = object{"leagueClientExecutablePaths": []any{}, "tencentInstallationPath": "", "weGameExecutablePath": "", "officialRiotClientExecutablePath": "", "tclsExecutablePath": "", "weGameLauncherExecutablePath": "", "detectedLiveStreamingClients": []any{}}
 	states["league-client-ux-main:state"] = object{"launchedClients": []any{}, "hasClientButNoCommandLine": false}
 	states["renderer-debug-main:state"] = object{"sendAllNativeLcuEvents": false, "rules": []any{}, "logAllLcuEvents": false}

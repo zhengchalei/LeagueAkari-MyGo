@@ -1,0 +1,2536 @@
+{
+  "balance": {
+    "1": {
+      "id": 1,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "10": {
+      "id": 10,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "101": {
+      "id": 101,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.93,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "93%"
+        }
+      ]
+    },
+    "102": {
+      "id": 102,
+      "adjustments": []
+    },
+    "103": {
+      "id": 103,
+      "adjustments": []
+    },
+    "104": {
+      "id": 104,
+      "adjustments": []
+    },
+    "105": {
+      "id": 105,
+      "adjustments": []
+    },
+    "106": {
+      "id": 106,
+      "adjustments": []
+    },
+    "107": {
+      "id": 107,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.92,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "92%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "11": {
+      "id": 11,
+      "adjustments": []
+    },
+    "110": {
+      "id": 110,
+      "adjustments": []
+    },
+    "111": {
+      "id": 111,
+      "adjustments": []
+    },
+    "112": {
+      "id": 112,
+      "adjustments": []
+    },
+    "113": {
+      "id": 113,
+      "adjustments": []
+    },
+    "114": {
+      "id": 114,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "115": {
+      "id": 115,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "ability-haste",
+          "value": -20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "-20"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "117": {
+      "id": 117,
+      "adjustments": []
+    },
+    "119": {
+      "id": 119,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "12": {
+      "id": 12,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "120": {
+      "id": 120,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "ability-haste",
+          "value": 10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "10"
+        },
+        {
+          "type": "healing",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "121": {
+      "id": 121,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "healing",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "122": {
+      "id": 122,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "126": {
+      "id": 126,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "127": {
+      "id": 127,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "13": {
+      "id": 13,
+      "adjustments": []
+    },
+    "131": {
+      "id": 131,
+      "adjustments": []
+    },
+    "133": {
+      "id": 133,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "attack-speed-growth",
+          "value": 2.5,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "+2.5%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "134": {
+      "id": 134,
+      "adjustments": []
+    },
+    "136": {
+      "id": 136,
+      "adjustments": []
+    },
+    "14": {
+      "id": 14,
+      "adjustments": [
+        {
+          "type": "ability-haste",
+          "value": -10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "-10"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "141": {
+      "id": 141,
+      "adjustments": [
+        {
+          "type": "healing",
+          "value": 0.8,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "80%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "142": {
+      "id": 142,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "143": {
+      "id": 143,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "ability-haste",
+          "value": -10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "-10"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "145": {
+      "id": 145,
+      "adjustments": [
+        {
+          "type": "attack-speed-growth",
+          "value": 2.5,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "+2.5%"
+        }
+      ]
+    },
+    "147": {
+      "id": 147,
+      "adjustments": [
+        {
+          "type": "shielding",
+          "value": 0.8,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "80%"
+        },
+        {
+          "type": "healing",
+          "value": 0.8,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "80%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "15": {
+      "id": 15,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.93,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "93%"
+        }
+      ]
+    },
+    "150": {
+      "id": 150,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "attack-speed-growth",
+          "value": 2.5,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "+2.5%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "154": {
+      "id": 154,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.96,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "96%"
+        },
+        {
+          "type": "healing",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "157": {
+      "id": 157,
+      "adjustments": [
+        {
+          "type": "attack-speed-growth",
+          "value": 2.5,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "+2.5%"
+        }
+      ]
+    },
+    "16": {
+      "id": 16,
+      "adjustments": [
+        {
+          "type": "ability-haste",
+          "value": 10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "10"
+        }
+      ]
+    },
+    "161": {
+      "id": 161,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "163": {
+      "id": 163,
+      "adjustments": []
+    },
+    "164": {
+      "id": 164,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "ability-haste",
+          "value": 10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "10"
+        },
+        {
+          "type": "shielding",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "166": {
+      "id": 166,
+      "adjustments": []
+    },
+    "17": {
+      "id": 17,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "18": {
+      "id": 18,
+      "adjustments": []
+    },
+    "19": {
+      "id": 19,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "healing",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "2": {
+      "id": 2,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "20": {
+      "id": 20,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "shielding",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "healing",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "200": {
+      "id": 200,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "201": {
+      "id": 201,
+      "adjustments": []
+    },
+    "202": {
+      "id": 202,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "203": {
+      "id": 203,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "attack-speed-growth",
+          "value": 2.5,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "+2.5%"
+        }
+      ]
+    },
+    "21": {
+      "id": 21,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.93,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "93%"
+        }
+      ]
+    },
+    "22": {
+      "id": 22,
+      "adjustments": []
+    },
+    "221": {
+      "id": 221,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "222": {
+      "id": 222,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "223": {
+      "id": 223,
+      "adjustments": []
+    },
+    "23": {
+      "id": 23,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "healing",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "233": {
+      "id": 233,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "healing",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "234": {
+      "id": 234,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "235": {
+      "id": 235,
+      "adjustments": []
+    },
+    "236": {
+      "id": 236,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "ability-haste",
+          "value": 10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "10"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "238": {
+      "id": 238,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "resource-regen",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "24": {
+      "id": 24,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.97,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "97%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "240": {
+      "id": 240,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "245": {
+      "id": 245,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "246": {
+      "id": 246,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "25": {
+      "id": 25,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "254": {
+      "id": 254,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "26": {
+      "id": 26,
+      "adjustments": []
+    },
+    "266": {
+      "id": 266,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "267": {
+      "id": 267,
+      "adjustments": []
+    },
+    "268": {
+      "id": 268,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "ability-haste",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        },
+        {
+          "type": "attack-speed-growth",
+          "value": 2.5,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "+2.5%"
+        }
+      ]
+    },
+    "27": {
+      "id": 27,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "28": {
+      "id": 28,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "29": {
+      "id": 29,
+      "adjustments": []
+    },
+    "3": {
+      "id": 3,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "30": {
+      "id": 30,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.93,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "93%"
+        }
+      ]
+    },
+    "31": {
+      "id": 31,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "32": {
+      "id": 32,
+      "adjustments": []
+    },
+    "33": {
+      "id": 33,
+      "adjustments": []
+    },
+    "34": {
+      "id": 34,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "35": {
+      "id": 35,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "350": {
+      "id": 350,
+      "adjustments": []
+    },
+    "36": {
+      "id": 36,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "healing",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "360": {
+      "id": 360,
+      "adjustments": []
+    },
+    "37": {
+      "id": 37,
+      "adjustments": []
+    },
+    "38": {
+      "id": 38,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "39": {
+      "id": 39,
+      "adjustments": [
+        {
+          "type": "ability-haste",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "4": {
+      "id": 4,
+      "adjustments": []
+    },
+    "40": {
+      "id": 40,
+      "adjustments": []
+    },
+    "41": {
+      "id": 41,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "412": {
+      "id": 412,
+      "adjustments": []
+    },
+    "42": {
+      "id": 42,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "420": {
+      "id": 420,
+      "adjustments": [
+        {
+          "type": "healing",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "421": {
+      "id": 421,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "427": {
+      "id": 427,
+      "adjustments": []
+    },
+    "429": {
+      "id": 429,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "43": {
+      "id": 43,
+      "adjustments": []
+    },
+    "432": {
+      "id": 432,
+      "adjustments": [
+        {
+          "type": "healing",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "44": {
+      "id": 44,
+      "adjustments": []
+    },
+    "45": {
+      "id": 45,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "48": {
+      "id": 48,
+      "adjustments": []
+    },
+    "497": {
+      "id": 497,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "ability-haste",
+          "value": 10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "10"
+        }
+      ]
+    },
+    "498": {
+      "id": 498,
+      "adjustments": []
+    },
+    "5": {
+      "id": 5,
+      "adjustments": []
+    },
+    "50": {
+      "id": 50,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "healing",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "51": {
+      "id": 51,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "516": {
+      "id": 516,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "517": {
+      "id": 517,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "518": {
+      "id": 518,
+      "adjustments": []
+    },
+    "523": {
+      "id": 523,
+      "adjustments": []
+    },
+    "526": {
+      "id": 526,
+      "adjustments": [
+        {
+          "type": "shielding",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "53": {
+      "id": 53,
+      "adjustments": []
+    },
+    "54": {
+      "id": 54,
+      "adjustments": []
+    },
+    "55": {
+      "id": 55,
+      "adjustments": [
+        {
+          "type": "ability-haste",
+          "value": 10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "10"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "555": {
+      "id": 555,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "56": {
+      "id": 56,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "healing",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "57": {
+      "id": 57,
+      "adjustments": [
+        {
+          "type": "healing",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "58": {
+      "id": 58,
+      "adjustments": [
+        {
+          "type": "healing",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "59": {
+      "id": 59,
+      "adjustments": []
+    },
+    "6": {
+      "id": 6,
+      "adjustments": []
+    },
+    "60": {
+      "id": 60,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "tenacity",
+          "value": 10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "10"
+        }
+      ]
+    },
+    "61": {
+      "id": 61,
+      "adjustments": []
+    },
+    "62": {
+      "id": 62,
+      "adjustments": []
+    },
+    "63": {
+      "id": 63,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "ability-haste",
+          "value": -20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "-20"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "64": {
+      "id": 64,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "shielding",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "resource-regen",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "healing",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "67": {
+      "id": 67,
+      "adjustments": []
+    },
+    "68": {
+      "id": 68,
+      "adjustments": []
+    },
+    "69": {
+      "id": 69,
+      "adjustments": []
+    },
+    "7": {
+      "id": 7,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "ability-haste",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "711": {
+      "id": 711,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "72": {
+      "id": 72,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "74": {
+      "id": 74,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "75": {
+      "id": 75,
+      "adjustments": []
+    },
+    "76": {
+      "id": 76,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "77": {
+      "id": 77,
+      "adjustments": [
+        {
+          "type": "shielding",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "healing",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "777": {
+      "id": 777,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.97,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "97%"
+        },
+        {
+          "type": "attack-speed-growth",
+          "value": 2.5,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "+2.5%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "78": {
+      "id": 78,
+      "adjustments": []
+    },
+    "79": {
+      "id": 79,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "799": {
+      "id": 799,
+      "adjustments": []
+    },
+    "8": {
+      "id": 8,
+      "adjustments": []
+    },
+    "80": {
+      "id": 80,
+      "adjustments": []
+    },
+    "800": {
+      "id": 800,
+      "adjustments": []
+    },
+    "804": {
+      "id": 804,
+      "adjustments": []
+    },
+    "805": {
+      "id": 805,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "81": {
+      "id": 81,
+      "adjustments": []
+    },
+    "82": {
+      "id": 82,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "83": {
+      "id": 83,
+      "adjustments": []
+    },
+    "84": {
+      "id": 84,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "90%"
+        },
+        {
+          "type": "resource-regen",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "85": {
+      "id": 85,
+      "adjustments": [
+        {
+          "type": "resource-regen",
+          "value": 1.2,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "120%"
+        }
+      ]
+    },
+    "86": {
+      "id": 86,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "875": {
+      "id": 875,
+      "adjustments": []
+    },
+    "876": {
+      "id": 876,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "887": {
+      "id": 887,
+      "adjustments": []
+    },
+    "888": {
+      "id": 888,
+      "adjustments": []
+    },
+    "89": {
+      "id": 89,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "893": {
+      "id": 893,
+      "adjustments": []
+    },
+    "895": {
+      "id": 895,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.97,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "97%"
+        }
+      ]
+    },
+    "897": {
+      "id": 897,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "9": {
+      "id": 9,
+      "adjustments": []
+    },
+    "90": {
+      "id": 90,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "901": {
+      "id": 901,
+      "adjustments": []
+    },
+    "902": {
+      "id": 902,
+      "adjustments": []
+    },
+    "904": {
+      "id": 904,
+      "adjustments": []
+    },
+    "91": {
+      "id": 91,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "95%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "tenacity",
+          "value": 20,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "20"
+        }
+      ]
+    },
+    "910": {
+      "id": 910,
+      "adjustments": [
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "92": {
+      "id": 92,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 0.92,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "buffed",
+          "formattedValue": "92%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "105%"
+        }
+      ]
+    },
+    "950": {
+      "id": 950,
+      "adjustments": [
+        {
+          "type": "ability-haste",
+          "value": 10,
+          "display": "literal",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "10"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "buffed",
+          "formattedValue": "110%"
+        }
+      ]
+    },
+    "96": {
+      "id": 96,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    },
+    "98": {
+      "id": 98,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.05,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "105%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.95,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "95%"
+        }
+      ]
+    },
+    "99": {
+      "id": 99,
+      "adjustments": [
+        {
+          "type": "damage-taken",
+          "value": 1.1,
+          "display": "percentage",
+          "effectType": "nerf",
+          "effect": "nerfed",
+          "formattedValue": "110%"
+        },
+        {
+          "type": "shielding",
+          "value": 0.8,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "80%"
+        },
+        {
+          "type": "damage-dealt",
+          "value": 0.9,
+          "display": "percentage",
+          "effectType": "buff",
+          "effect": "nerfed",
+          "formattedValue": "90%"
+        }
+      ]
+    }
+  },
+  "version": "16.19",
+  "sourceUrl": "https://www.bilibili.com/toy/resg/index.html",
+  "collectedAt": "2026-10-02T06:18:36.545Z",
+  "revision": "https://www.bilibilitoy.com/toy/resg/19226257645568-v21512/",
+  "lastUpdate": 1791264218077,
+  "cached": true
+}

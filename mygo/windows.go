@@ -266,7 +266,7 @@ func (d *Desktop) ensureWindowOnMain(name string) *mygo.Window {
 	switch name {
 	case "main-window":
 	case "aux-window":
-		width, height, minWidth, minHeight = 340, 420, 340, 420
+		width, height, minWidth, minHeight = 340, 620, 340, 420
 	case "opgg-window":
 		width, height, minWidth, minHeight = 530, 720, 530, 530
 	case "ongoing-game-window":

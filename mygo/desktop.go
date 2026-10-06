@@ -75,6 +75,7 @@ func (d *Desktop) initialize(ctx context.Context) error {
 	d.windows = map[string]*mygo.Window{}
 	d.static = staticStates()
 	d.static["extra-assets-main:opgg"]["cached"] = true
+	d.loadKiwiBalance(dir)
 	d.started = time.Now()
 	d.ctx = ctx
 	defaults := map[string]map[string]any{}
@@ -185,6 +186,7 @@ func (d *Desktop) run(ctx context.Context) {
 	go d.refreshExtraAssets(ctx)
 	go d.migrateStorage()
 	go d.refreshBalance(ctx)
+	go d.refreshKiwiBalance(ctx)
 	ticker := time.NewTicker(3 * time.Second)
 	defer ticker.Stop()
 	previousSGP := object{}

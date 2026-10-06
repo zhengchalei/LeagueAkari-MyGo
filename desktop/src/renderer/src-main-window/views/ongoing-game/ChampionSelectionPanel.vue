@@ -34,6 +34,21 @@
             <span v-if="!balanceData[championId]?.modes[gameMode]">
               {{ t('timo.selection.noBalance') }}
             </span>
+            <span v-else-if="!balanceData[championId].modes[gameMode].adjustments.length">
+              {{ t('timo.selection.sourceNoChanges') }}
+            </span>
+            <span v-for="note in championNotes(championId)" :key="note">{{ note }}</span>
+            <span v-if="balanceData[championId]?.modes[gameMode]" class="balance-source">
+              {{
+                t('timo.selection.source', {
+                  source: balanceData[championId].modes[gameMode].source
+                })
+              }}
+              {{ balanceData[championId].modes[gameMode].version }}
+              <template v-if="balanceData[championId].modes[gameMode].cached">
+                · {{ t('timo.selection.cached') }}
+              </template>
+            </span>
           </div>
         </NTooltip>
       </div>
@@ -59,7 +74,23 @@
             </span>
             <span v-if="!debuffs.length" class="balance-empty">—</span>
           </div>
-          <span class="balance-source">{{ t('timo.selection.source', { source: 'OP.GG' }) }}</span>
+          <span v-if="!currentBalance.adjustments.length" class="empty-message">
+            {{ t('timo.selection.sourceNoChanges') }}
+          </span>
+          <div v-if="currentNotes.length" class="balance-notes">
+            <span class="balance-label">{{ t('timo.selection.notes') }}</span>
+            <span v-for="note in currentNotes" :key="note">{{ note }}</span>
+          </div>
+          <NTooltip>
+            <template #trigger>
+              <span class="balance-source">
+                {{ t('timo.selection.source', { source: currentBalance.source }) }}
+                {{ currentBalance.version }}
+                <template v-if="currentBalance.cached">· {{ t('timo.selection.cached') }}</template>
+              </span>
+            </template>
+            {{ currentBalance.sourceUrl || currentBalance.source }}
+          </NTooltip>
         </div>
         <span v-else class="empty-message">{{ t('timo.selection.noBalance') }}</span>
       </template>
@@ -216,6 +247,11 @@ const championAdjustments = (championId: number) => {
 const currentBalance = computed(
   () => balanceData.value[currentChampion.value]?.modes[gameMode.value]
 )
+const championNotes = (championId: number) =>
+  (balanceData.value[championId]?.modes[gameMode.value]?.adjustments || [])
+    .filter((adjustment) => adjustment.type === 'special' && adjustment.description)
+    .map((adjustment) => adjustment.description!)
+const currentNotes = computed(() => championNotes(currentChampion.value))
 const buffs = computed(() =>
   championAdjustments(currentChampion.value).filter((item) => item.effect === 'buffed')
 )
@@ -226,6 +262,7 @@ const adjustmentLabel = (adjustment: BalanceAdjustment) => {
   return t(`auxWindow.championBench.balanceTypes.${adjustment.type}`)
 }
 const formatAdjustment = (adjustment: BalanceAdjustment) => {
+  if (adjustment.formattedValue) return adjustment.formattedValue
   return adjustment.display === 'percentage'
     ? `${(adjustment.value * 100).toFixed()}%`
     : `${adjustment.value > 0 ? '+' : ''}${adjustment.value}`
@@ -483,6 +520,12 @@ const selectSkin = async (skinId: number) => {
   flex-direction: column;
   gap: 4px;
   font-size: 12px;
+}
+.balance-notes {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
 }
 :global([data-theme='dark']) .buffed {
   color: #73cda3;

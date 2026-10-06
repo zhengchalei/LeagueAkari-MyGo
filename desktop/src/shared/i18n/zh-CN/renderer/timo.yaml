@@ -10,6 +10,9 @@ timo:
     buffs: 增益
     debuffs: 减益
     noChanges: 无调整
+    sourceNoChanges: 数据源未列出该英雄的调整
+    notes: 其他说明
+    cached: 缓存
     noBalance: 暂无此模式的独立平衡数据
     source: '数据来源：{{source}}'
     failed: '英雄切换失败：{{reason}}'

@@ -1,5 +1,8 @@
 import { useExtraAssetsStore } from '@renderer-shared/shards/extra-assets/store'
+import type { BalanceAdjustment } from '@shared/types/champion-balance'
 import { MaybeRefOrGetter, computed, readonly, toRef } from 'vue'
+
+export type { BalanceAdjustment } from '@shared/types/champion-balance'
 
 const ADJUSTMENT_EFFECT = {
   'damage-dealt': 'buff',
@@ -81,47 +84,14 @@ const FANDOM_MODE_MAP = {
   aram: 'ARAM',
   ar: 'CHERRY'
 }
-export interface BalanceAdjustment {
-  /** 该增益 / 减益的类型 */
-  type:
-    | 'damage-dealt'
-    | 'damage-taken'
-    | 'shielding'
-    | 'healing'
-    | 'ability-haste'
-    | 'attack-speed'
-    | 'energy-regen'
-    | 'mana-regen'
-    | 'tenacity'
-    | 'movement-speed'
-    | 'area-of-effect-damage'
-    | 'special'
-
-  /** 具体数值 */
-  value: number
-
-  display: 'percentage' | 'literal'
-
-  /**
-   * 效果类型
-   * buff - percentage 下, 当大于 1 时表示增益, 小于 1 时表示减益; literal 下, 大于 0 表示增益, 小于 0 表示减益
-   * nerf - percentage 下, 当大于 1 时表示减益, 小于 1 时表示增益; literal 下, 大于 0 表示减益, 小于 0 表示增益
-   * neutral - 无法评判的变动效果
-   */
-  effectType: 'buff' | 'nerf' | 'neutral'
-
-  /**
-   * 具体效果
-   */
-  effect: 'buffed' | 'nerfed' | 'neutral'
-
-  /** 额外说明 */
-  description?: string
-}
-
 export interface ChampionModeBalance {
   overallEffect: 'buffed' | 'nerfed' | 'mixed' | 'neutral'
   adjustments: BalanceAdjustment[]
+  source?: string
+  sourceUrl?: string
+  version?: string
+  cached?: boolean
+  lastUpdate?: number
 }
 
 export interface ChampionBalance {
@@ -138,7 +108,7 @@ export function useChampionBalanceData(_source: MaybeRefOrGetter<string>) {
   const eas = useExtraAssetsStore()
   const source = toRef(_source)
 
-  const data = computed(() => {
+  const providerData = computed<Record<number, ChampionBalance>>(() => {
     if (!source.value) {
       return {}
     }
@@ -212,7 +182,11 @@ export function useChampionBalanceData(_source: MaybeRefOrGetter<string>) {
                     overallEffect = 'buffed'
                   }
 
-                  acc[FANDOM_MODE_MAP[mode]] = { overallEffect, adjustments }
+                  acc[FANDOM_MODE_MAP[mode]] = {
+                    overallEffect,
+                    adjustments,
+                    source: 'Fandom Wiki'
+                  }
                 }
 
                 return acc
@@ -267,6 +241,7 @@ export function useChampionBalanceData(_source: MaybeRefOrGetter<string>) {
             modes: {
               ARAM: {
                 adjustments,
+                source: 'OP.GG',
                 overallEffect:
                   hasBuff && hasNerf ? 'mixed' : hasBuff ? 'buffed' : hasNerf ? 'nerfed' : 'neutral'
               }
@@ -279,6 +254,31 @@ export function useChampionBalanceData(_source: MaybeRefOrGetter<string>) {
     }
 
     return {}
+  })
+
+  const data = computed<Record<number, ChampionBalance>>(() => {
+    const champions = { ...providerData.value }
+    for (const champion of Object.values(eas.kiwi.balance)) {
+      const hasBuff = champion.adjustments.some((entry) => entry.effect === 'buffed')
+      const hasNerf = champion.adjustments.some((entry) => entry.effect === 'nerfed')
+      champions[champion.id] = {
+        id: champion.id,
+        modes: {
+          ...champions[champion.id]?.modes,
+          KIWI: {
+            adjustments: champion.adjustments,
+            overallEffect:
+              hasBuff && hasNerf ? 'mixed' : hasBuff ? 'buffed' : hasNerf ? 'nerfed' : 'neutral',
+            source: 'Bilibili RESG',
+            sourceUrl: eas.kiwi.sourceUrl,
+            version: eas.kiwi.version,
+            cached: eas.kiwi.cached,
+            lastUpdate: eas.kiwi.lastUpdate
+          }
+        }
+      }
+    }
+    return champions
   })
 
   return { data, source: readonly(source) }

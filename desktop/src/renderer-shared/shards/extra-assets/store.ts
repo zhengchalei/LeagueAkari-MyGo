@@ -1,5 +1,6 @@
 import { BalanceType } from '@shared/data-sources/fandom'
 import { GtimgHeroListJs, GtimgKiwiAugments, Hero } from '@shared/data-sources/gtimg'
+import type { KiwiChampionBalance } from '@shared/types/champion-balance'
 import type { OpggAramBalanceItem } from '@shared/types/opgg'
 import { defineStore } from 'pinia'
 import { computed, shallowReactive } from 'vue'
@@ -34,6 +35,13 @@ export const useExtraAssetsStore = defineStore('shard:extra-assets-renderer', ()
     lastUpdate: 0,
     cached: true
   })
+  const kiwi = shallowReactive({
+    balance: {} as Record<number, KiwiChampionBalance>,
+    version: '',
+    sourceUrl: '',
+    lastUpdate: 0,
+    cached: true
+  })
 
   const heroListMap = computed(() => {
     if (!gtimg.heroList) return {}
@@ -55,6 +63,7 @@ export const useExtraAssetsStore = defineStore('shard:extra-assets-renderer', ()
     gtimg,
     fandom,
     opgg,
+    kiwi,
 
     // computed
     heroListMap,

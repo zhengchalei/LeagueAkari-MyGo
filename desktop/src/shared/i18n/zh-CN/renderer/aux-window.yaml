@@ -11,6 +11,15 @@ auxWindow:
     repositionToAlignLeagueClientUx: 贴附到客户端
   championBench:
     title: 英雄选择台
+    chooseChampion: 选择英雄
+    currentChampion: 当前英雄
+    availableChampions: 可选英雄
+    adjustments: 英雄调整
+    changeValue: 变化值
+    sourceValue: '来源数值：{{value}}'
+    buffCount: '增益 {{count}}'
+    nerfCount: '减益 {{count}}'
+    unlisted: 未列出调整
     reroll: '重随 (剩余: {{count}})'
     charity: '重随并立即取回 (剩余: {{count}})'
     notInBenchMode: 当前不在随机模式中
@@ -26,6 +35,8 @@ auxWindow:
       mana-regen: 法力回复
       health-regen: 生命回复
       attack-speed: 攻击速度
+      attack-speed-growth: 攻击速度增长
+      resource-regen: 施法资源回复
       movement-speed: 移动速度
       tenacity: 韧性
       energy-regen: 能量回复
@@ -100,6 +111,16 @@ auxWindow:
         waitingForMembers: 自动匹配需达到 {{count}} 人
         waitingForInvitees: 等待邀请中成员
   skinSelection:
+    title: 已有皮肤
+    ownedCount: '{{count}} 款'
+    chooseSkin: '选择{{name}}'
+    selected: '已选：{{name}}'
+    applying: '正在应用：{{name}}'
+    loading: 正在读取已有皮肤
+    loadFailed: 读取已有皮肤失败
+    empty: 暂无可用皮肤
+    disabled: 当前无法切换皮肤
+    waitingSelection: 等待客户端确认所选皮肤
     skins: '{{count}} 款皮肤可用'
     button: 应用
     success: 应用皮肤成功

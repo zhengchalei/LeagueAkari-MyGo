@@ -10,6 +10,9 @@ timo:
     buffs: Buffs
     debuffs: Nerfs
     noChanges: No adjustments
+    sourceNoChanges: The source lists no adjustments for this champion
+    notes: Other notes
+    cached: Cached
     noBalance: No independent balance data for this mode
     source: 'Source: {{source}}'
     failed: 'Could not switch champion: {{reason}}'

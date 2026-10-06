@@ -11,6 +11,17 @@ auxWindow:
     repositionToAlignLeagueClientUx: Align with League Client UX
   championBench:
     title: Champion Bench
+    chooseChampion: Choose a champion
+    currentChampion: Current champion
+    availableChampions: Available champions
+    adjustments: Champion adjustments
+    changeValue: Change
+    sourceValue: 'Source value: {{value}}'
+    buffCount_one: '{{count}} buff'
+    buffCount_other: '{{count}} buffs'
+    nerfCount_one: '{{count}} nerf'
+    nerfCount_other: '{{count}} nerfs'
+    unlisted: Unlisted
     reroll: 'Reroll (Remaining: {{count}})'
     charity: 'Reroll and Take back (Remaining: {{count}})'
     notInBenchMode: Not currently in a bench mode
@@ -26,6 +37,8 @@ auxWindow:
       mana-regen: Mana Regen
       health-regen: Health Regen
       attack-speed: Attack Speed
+      attack-speed-growth: Attack Speed Growth
+      resource-regen: Casting Resource Regen
       movement-speed: Movement Speed
       tenacity: Tenacity
       energy-regen: Energy Regen
@@ -101,6 +114,17 @@ auxWindow:
         waitingForMembers_other: Auto-matchmaking requires {{count}} players
         waitingForInvitees: Waiting for invited members
   skinSelection:
+    title: Owned Skins
+    ownedCount_one: '{{count}} skin'
+    ownedCount_other: '{{count}} skins'
+    chooseSkin: 'Select {{name}}'
+    selected: 'Selected: {{name}}'
+    applying: 'Applying: {{name}}'
+    loading: Loading owned skins
+    loadFailed: Failed to load owned skins
+    empty: No skins available
+    disabled: Skin selection is unavailable
+    waitingSelection: Waiting for the client to confirm the selected skin
     skins_one: '{{count}} skin available'
     skins_other: '{{count}} skins available'
     button: Apply
