@@ -31,7 +31,9 @@ func (d *Desktop) fetchBalance(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	response, err := (&http.Client{Timeout: 12 * time.Second}).Do(request)
+	httpClient := d.externalHTTP()
+	defer httpClient.CloseIdleConnections()
+	response, err := httpClient.Do(request)
 	if err != nil {
 		return err
 	}

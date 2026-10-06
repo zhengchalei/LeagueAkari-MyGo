@@ -1,17 +1,21 @@
 # LeagueAkari-MyGo
 
-**v0.5.0 · 国服 LOL 战绩与选人助手的轻量版本。** 使用 [MyGo](https://github.com/egoist/mygo) 0.2.10，以 Go 后端和 Windows WebView2 承载原有 Vue 界面，替换 Electron 宿主。
+**v0.5.2 · 国服 LOL 战绩与选人助手的轻量版本。** 使用 [MyGo](https://github.com/egoist/mygo) 0.2.10，以 Go 后端和 Windows WebView2 承载原有 Vue 界面，替换 Electron 宿主。
 
 本项目基于 [LeagueAkari](https://github.com/LeagueAkari/LeagueAkari) 开发，是独立维护的非官方版本。感谢 Hanxven 与 LeagueAkari 贡献者提供原始界面和业务实现，感谢 egoist 与 MyGo 贡献者提供桌面框架。
 
 ## 下载与启动
 
-从 [最新发布](https://github.com/zhengchalei/LeagueAkari-MyGo/releases/latest) 下载 Windows x64 压缩包 `LeagueAkari-MyGo-0.5.0-win-x64.zip`，完整解压后运行 **LeagueAkari-MyGo.exe**。这是便携版，运行时不需要 Node.js 或独立本地服务。
+从 [最新发布](https://github.com/zhengchalei/LeagueAkari-MyGo/releases/latest) 下载 Windows x64 压缩包 `LeagueAkari-MyGo-<版本>-win-x64.zip`，完整解压后运行 **LeagueAkari-MyGo.exe**。这是便携版，运行时不需要 Node.js 或独立本地服务。
 
 系统需要 Windows x64 和 [Microsoft Edge WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。启动 LOL 客户端后，助手会自动识别国服 WeGame 客户端；也支持手动连接和切换客户端。常规查询可在非管理员权限下使用，原生游戏输入需要助手与游戏具有相同权限。
 
 ## 功能
 
+- v0.5.2 补齐聊天在线状态、选人／房间／赛后会话与成员同步，恢复选人和房间中的快捷文本发送；同步本人资料背景和登录排队信息，登录期间不会因召唤师尚未加载而误断连。英雄与可选／禁用列表通过事件实时更新。
+- 导入配置即时应用到自动连接、战绩查询数量、快捷键和辅助窗口样式；硬件加速在下次启动时生效。HTTP 代理设置即时用于 SGP、OP.GG 和其他外部请求，本地客户端请求保持直连。
+- 修复 Windows 程序与桌面快捷方式显示默认图标的问题，图标和版本信息随构建嵌入 EXE。
+- v0.5.1 修复海克斯大乱斗“三选一”候选英雄未同步的问题：主窗口和 Mini 显示个人候选卡，支持点击锁定，并在选人结束或客户端断连时清理候选。
 - 打开默认显示本人真实战绩；进入选人或对局时自动切到“对局”，用户可以手动切回。
 - 大乱斗与海克斯大乱斗共用选人交互：点击英雄卡片选择或交换，已有皮肤与英雄同时显示，点击皮肤提交选择。平衡信息只展示有可靠来源的增益与减益。
 - 查看队友、对手、段位、近期战绩、胜率、KDA、玩家标签、组队信息与战绩详情。完整时间线按需查询。
@@ -25,7 +29,7 @@
 
 LCU REST/事件、SGP 和客户端图片均由 Go 访问，认证凭据不返回界面。已有皮肤来自客户端库存。支持绝对 `file:` 图片路径，经本地图片代理提供给 WebView。
 
-OP.GG 普通大乱斗平衡数据在启动时刷新，之后每 30 分钟更新，查询失败保留随包快照。海克斯大乱斗独立平衡数据尚未取得时显示暂无数据。
+OP.GG 普通大乱斗平衡数据在启动时刷新，之后每 30 分钟更新，查询失败保留随包快照。海克斯大乱斗独立平衡数据尚未取得时显示暂无数据，不使用普通大乱斗数值替代。已检查的公开接口和客户端资源边界见 [海斗数据调查](docs/KIWI_BALANCE.md)。
 
 ## 数据与迁移
 
@@ -72,6 +76,8 @@ npm run mygo:package
 ```
 
 前端依赖使用 `desktop/` 的 Yarn 锁文件，Go 工具链按 `go.mod` 选择版本。构建结果为 `mygo/build/LeagueAkari-MyGo.exe`，压缩包位于同目录。构建前退出正在运行的同名程序；页面静态资源内嵌在可执行文件中，发布包附带许可证。
+
+构建脚本通过固定版本的 `go-winres` 生成 Windows 图标和版本资源；首次构建需要下载该构建工具，不增加程序的运行依赖。需要保留运行中的旧构建时，可传入独立输出目录，例如 `npm run mygo:build -- build/release-0.5.2`，随后用 `scripts/package-mygo.ps1 -BuildDirectory mygo/build/release-0.5.2` 打包该目录。
 
 ```powershell
 npm run mygo:test

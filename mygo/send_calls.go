@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/zhengchalei/LeagueAkari-MyGo/mygo/internal/client"
@@ -37,7 +38,7 @@ func (d *Desktop) sendCall(ctx context.Context, method string, args []any) (any,
 			if id == "" {
 				return false, nil
 			}
-			_, err := d.client.JSON(ctx, http.MethodPost, "/lol-chat/v1/conversations/"+id+"/messages", object{"body": strings.Join(lines, "\n"), "type": "chat"})
+			_, err := d.client.JSON(ctx, http.MethodPost, "/lol-chat/v1/conversations/"+url.PathEscape(id)+"/messages", object{"body": strings.Join(lines, "\n"), "type": "chat"})
 			return err == nil, err
 		}
 		if phase != "in-game" {

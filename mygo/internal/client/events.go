@@ -64,24 +64,53 @@ func endpointParams(pattern, uri string) (map[string]any, bool) {
 }
 
 func (c *Client) dispatchEvent(event map[string]any) {
+	c.mu.RLock()
+	disconnected := c.manualDisconnect || (c.eventsConnected && c.auth == nil)
+	c.mu.RUnlock()
+	if disconnected {
+		return // Ignore frames from a stream that is still closing after disconnect.
+	}
 	uri := String(event["uri"])
 	if uri == "" || credentialEndpoint(uri) {
 		return
 	}
+	eventType := String(event["eventType"])
 	data := event["data"]
-	if String(event["eventType"]) == "Delete" {
+	if eventType == "Delete" {
 		data = nil
 	}
 	fields := map[string][2]string{
 		"/lol-gameflow/v1/gameflow-phase": {"gameflow", "phase"}, "/lol-gameflow/v1/session": {"gameflow", "session"},
-		"/lol-champ-select/v1/session": {"champSelect", "session"}, "/lol-champ-select/v1/skin-selector-info": {"champSelect", "skinSelectorInfo"},
-		"/lol-lobby/v2/lobby": {"lobby", "lobby"}, "/lol-summoner/v1/current-summoner": {"summoner", "me"},
+		"/lol-champ-select/v1/skin-selector-info": {"champSelect", "skinSelectorInfo"},
+		"/lol-lobby/v2/lobby":                     {"lobby", "lobby"}, "/lol-summoner/v1/current-summoner": {"summoner", "me"},
 		"/lol-matchmaking/v1/ready-check": {"matchmaking", "readyCheck"}, "/lol-matchmaking/v1/search": {"matchmaking", "search"},
 		"/lol-honor-v2/v1/ballot": {"honor", "ballot"},
+		"/lol-chat/v1/me":         {"chat", "me"}, "/lol-login/v1/login-queue-state": {"login", "loginQueueState"},
+		"/lol-summoner/v1/current-summoner/summoner-profile": {"summoner", "profile"},
+		"/lol-champ-select/v1/ongoing-champion-swap":         {"champSelect", "ongoingChampionSwap"},
 	}
 	if field, ok := fields[uri]; ok {
 		c.set(field[0], field[1], data)
 	}
+	switch uri {
+	case subsetChampionListEndpoint:
+		c.setSubsetChampionList(data)
+	case "/lol-champ-select/v1/session":
+		c.setChampSelectSession(data)
+	case "/lol-champ-select/v1/current-champion":
+		c.setCurrentChampion(data)
+	case "/lol-champ-select/v1/pickable-champion-ids":
+		c.set("champSelect", "currentPickableChampionIds", List(data))
+	case "/lol-champ-select/v1/bannable-champion-ids":
+		c.set("champSelect", "currentBannableChampionIds", List(data))
+	case "/lol-champ-select/v1/disabled-champion-ids":
+		c.set("champSelect", "disabledChampionIds", List(data))
+	case "/lol-gameflow/v1/gameflow-phase":
+		if String(data) != "ChampSelect" {
+			c.clearChampSelect()
+		}
+	}
+	c.dispatchChatEvent(uri, eventType, event["data"])
 	if c.emit == nil {
 		return
 	}

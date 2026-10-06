@@ -1,7 +1,15 @@
 // @vitest-environment vue-client-renderer
 import type { CarouselSkins } from '@shared/types/league-client/champ-select'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createRenderer, nextTick, reactive, shallowRef, ssrContextKey } from 'vue'
+import {
+  createRenderer,
+  markRaw,
+  nextTick,
+  reactive,
+  shallowReactive,
+  shallowRef,
+  ssrContextKey
+} from 'vue'
 
 import ChampionSelectionPanel from './ChampionSelectionPanel.vue'
 
@@ -214,6 +222,34 @@ describe('champion and owned skin selection', () => {
   })
 
   afterEach(() => mountedPanels.splice(0).forEach((unmount) => unmount()))
+
+  it('shows all three personal choices when the host replaces the raw nested state', async () => {
+    mocks.store.champSelect.currentChampion = null
+    mocks.store.champSelect.session.timer.phase = 'BAN_PICK'
+    mocks.store.champSelect.session.benchChampions = [{ championId: 67 }, { championId: 143 }]
+    mocks.store.champSelect.currentPickableChampionIds = new Set([23, 421, 202, 67, 143, 103])
+    mocks.store.lobbyTeamBuilder = shallowReactive({
+      champSelect: markRaw({ subsetChampionList: [] as number[] })
+    })
+    const root = renderPanel()
+    await settleRender()
+    expect(championButton(root, 23)).toBeUndefined()
+
+    mocks.store.lobbyTeamBuilder.champSelect = markRaw({ subsetChampionList: [23, 421, 202] })
+    await settleRender()
+    for (const championId of [23, 421, 202]) {
+      expect(championButton(root, championId).props.disabled).toBe(false)
+    }
+    expect(championButton(root, 103)).toBeUndefined()
+    expect(championButton(root, 67).props.disabled).toBe(true)
+    await championButton(root, 421).props.onClick()
+    expect(mocks.pickOrBan).toHaveBeenCalledExactlyOnceWith(421, true, 'pick', 42)
+    expect(mocks.benchSwap).not.toHaveBeenCalled()
+
+    mocks.store.lobbyTeamBuilder.champSelect = markRaw({ subsetChampionList: [] })
+    await settleRender()
+    expect(championButton(root, 23)).toBeUndefined()
+  })
 
   it('locks the local initial pick immediately with one champion click', async () => {
     mocks.store.champSelect.currentChampion = null

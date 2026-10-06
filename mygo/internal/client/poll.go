@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 	"strings"
@@ -44,10 +45,36 @@ func (c *Client) PollOnce(ctx context.Context) error {
 		c.SetAuth(found)
 		auth = found
 	}
-	me, err := c.JSON(ctx, http.MethodGet, "/lol-summoner/v1/current-summoner", nil)
-	if err != nil {
-		c.disconnect()
-		return err
+	var me, loginQueue any
+	var summonerErr, queueErr error
+	var initial sync.WaitGroup
+	initial.Add(2)
+	go func() {
+		defer initial.Done()
+		me, summonerErr = c.JSON(ctx, http.MethodGet, "/lol-summoner/v1/current-summoner", nil)
+	}()
+	go func() {
+		defer initial.Done()
+		loginQueue, queueErr = c.JSON(ctx, http.MethodGet, "/lol-login/v1/login-queue-state", nil)
+	}()
+	initial.Wait()
+	if summonerErr != nil {
+		var status *StatusError
+		if !errors.As(summonerErr, &status) || status.Status == http.StatusUnauthorized || status.Status == http.StatusForbidden {
+			c.disconnect()
+			return summonerErr
+		}
+		// A summoner is unavailable during login/queueing. Confirm that the LCU
+		// itself is responding before treating this as a connection failure.
+		if queueErr != nil {
+			if _, loginErr := c.JSON(ctx, http.MethodGet, "/lol-login/v1/session", nil); loginErr != nil {
+				if _, phaseErr := c.JSON(ctx, http.MethodGet, "/lol-gameflow/v1/gameflow-phase", nil); phaseErr != nil {
+					c.disconnect()
+					return summonerErr
+				}
+			}
+		}
+		me = nil
 	}
 	if auth.Region == "" || auth.PlatformID == "" {
 		if locale, err := c.JSON(ctx, http.MethodGet, "/riotclient/region-locale", nil); err == nil {
@@ -65,11 +92,22 @@ func (c *Client) PollOnce(ctx context.Context) error {
 	c.set("state", "connectionState", "connected")
 	c.set("state", "auth", auth.Public())
 	c.set("summoner", "me", me)
+	if queueErr == nil {
+		c.set("login", "loginQueueState", loginQueue)
+	} else {
+		c.set("login", "loginQueueState", nil)
+	}
 	type endpoint struct{ state, key, path string }
 	endpoints := []endpoint{
 		{"gameflow", "phase", "/lol-gameflow/v1/gameflow-phase"}, {"gameflow", "session", "/lol-gameflow/v1/session"},
 		{"lobby", "lobby", "/lol-lobby/v2/lobby"}, {"matchmaking", "readyCheck", "/lol-matchmaking/v1/ready-check"},
 		{"matchmaking", "search", "/lol-matchmaking/v1/search"}, {"champSelect", "session", "/lol-champ-select/v1/session"},
+		{"chat", "me", "/lol-chat/v1/me"},
+	}
+	if me != nil {
+		endpoints = append(endpoints, endpoint{"summoner", "profile", "/lol-summoner/v1/current-summoner/summoner-profile"})
+	} else {
+		c.set("summoner", "profile", nil)
 	}
 	var wg sync.WaitGroup
 	for _, item := range endpoints {
@@ -80,31 +118,40 @@ func (c *Client) PollOnce(ctx context.Context) error {
 			if err != nil {
 				value = nil
 			}
-			c.set(item.state, item.key, value)
+			if item.state == "champSelect" && item.key == "session" {
+				c.setChampSelectSession(value)
+			} else {
+				c.set(item.state, item.key, value)
+			}
 		}(item)
 	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		c.syncChat(ctx)
+	}()
 	wg.Wait()
 	state := c.GameplayState()
 	session := Map(Map(state["champSelect"])["session"])
-	champion := int64(0)
-	for _, member := range List(session["myTeam"]) {
-		row := Map(member)
-		if Number(row["cellId"]) == Number(session["localPlayerCellId"]) {
-			champion = Number(row["championId"])
-			break
-		}
-	}
-	if champion > 0 {
-		c.set("champSelect", "currentChampion", champion)
-	} else {
-		c.set("champSelect", "currentChampion", nil)
-	}
 	if len(session) > 0 {
+		subset, err := c.JSON(ctx, http.MethodGet, subsetChampionListEndpoint, nil)
+		if err != nil {
+			subset = nil
+		}
+		c.setSubsetChampionList(subset)
 		for _, item := range []endpoint{{"champSelect", "currentPickableChampionIds", "/lol-champ-select/v1/pickable-champion-ids"}, {"champSelect", "currentBannableChampionIds", "/lol-champ-select/v1/bannable-champion-ids"}, {"champSelect", "disabledChampionIds", "/lol-champ-select/v1/disabled-champion-ids"}, {"champSelect", "skinSelectorInfo", "/lol-champ-select/v1/skin-selector-info"}} {
-			if value, err := c.JSON(ctx, http.MethodGet, item.path, nil); err == nil {
+			value, err := c.JSON(ctx, http.MethodGet, item.path, nil)
+			if err != nil {
+				value = nil
+			}
+			if item.key == "skinSelectorInfo" {
 				c.set(item.state, item.key, value)
+			} else {
+				c.set(item.state, item.key, List(value))
 			}
 		}
+	} else {
+		c.clearChampSelect()
 	}
 	c.mu.RLock()
 	loaded := c.assetsLoaded
@@ -119,7 +166,7 @@ func (c *Client) PollOnce(ctx context.Context) error {
 func (c *Client) disconnect() {
 	c.SetAuth(nil)
 	defaults := initialState()
-	for _, sub := range []string{"state", "gameflow", "champSelect", "summoner", "lobby", "matchmaking"} {
+	for _, sub := range []string{"state", "gameflow", "champSelect", "lobbyTeamBuilder", "summoner", "login", "chat", "lobby", "matchmaking", "honor"} {
 		for key, value := range defaults[sub].(map[string]any) {
 			c.set(sub, key, value)
 		}

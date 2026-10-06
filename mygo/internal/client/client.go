@@ -226,6 +226,46 @@ func (c *Client) set(substate, key string, value any) {
 	}
 }
 
+const subsetChampionListEndpoint = "/lol-lobby-team-builder/champ-select/v1/subset-champion-list"
+
+func (c *Client) setSubsetChampionList(value any) {
+	// Replace the nested object so both shallow-reactive renderer stores update.
+	c.set("lobbyTeamBuilder", "champSelect", map[string]any{"subsetChampionList": List(value)})
+}
+
+func (c *Client) setCurrentChampion(value any) {
+	if champion := Number(value); champion > 0 {
+		c.set("champSelect", "currentChampion", champion)
+	} else {
+		c.set("champSelect", "currentChampion", nil)
+	}
+}
+
+func (c *Client) setChampSelectSession(value any) {
+	if len(Map(value)) == 0 {
+		c.clearChampSelect()
+		return
+	}
+	c.set("champSelect", "session", value)
+	session := Map(value)
+	var champion any
+	for _, member := range List(session["myTeam"]) {
+		row := Map(member)
+		if Number(row["cellId"]) == Number(session["localPlayerCellId"]) {
+			champion = row["championId"]
+			break
+		}
+	}
+	c.setCurrentChampion(champion)
+}
+
+func (c *Client) clearChampSelect() {
+	for key, value := range Map(initialState()["champSelect"]) {
+		c.set("champSelect", key, value)
+	}
+	c.setSubsetChampionList(nil)
+}
+
 func encodeBody(body any) (io.Reader, error) {
 	if body == nil {
 		return nil, nil

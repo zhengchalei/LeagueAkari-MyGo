@@ -39,6 +39,9 @@ func (d *Desktop) migrateStorage() {
 	log.Printf("Legacy migration: %+v", report)
 }
 func (d *Desktop) prepareQuit(dataDirectory string) {
+	if d.externalClient != nil {
+		d.externalClient.CloseIdleConnections()
+	}
 	if d.platform != nil {
 		d.platform.Close()
 	}
@@ -107,16 +110,10 @@ func (d *Desktop) uninstall(ctx context.Context) (any, error) {
 	return object{"result": "ok"}, nil
 }
 func (d *Desktop) externalHTTP() *http.Client {
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	config := asObject(d.settingValue("app-common-main", "httpProxy"))
-	switch config["strategy"] {
-	case "disable":
-		transport.Proxy = nil
-	case "force":
-		proxy, _ := url.Parse(fmt.Sprintf("http://%s:%d", config["host"], int(client.Number(config["port"]))))
-		transport.Proxy = http.ProxyURL(proxy)
+	if d.externalClient != nil {
+		return d.externalClient
 	}
-	return &http.Client{Transport: transport, Timeout: 12 * time.Second}
+	return newExternalHTTPClient(d.store)
 }
 func (d *Desktop) fetchJSON(ctx context.Context, location string) (any, error) {
 	request, err := http.NewRequestWithContext(ctx, "GET", location, nil)

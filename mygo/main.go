@@ -16,7 +16,7 @@ import (
 	selfupdate "github.com/zhengchalei/LeagueAkari-MyGo/mygo/internal/update"
 )
 
-const appVersion = "0.5.0"
+const appVersion = "0.5.2"
 
 //go:embed all:frontend/dist
 var frontend embed.FS

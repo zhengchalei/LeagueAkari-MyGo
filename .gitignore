@@ -12,6 +12,7 @@ mygo/build/
 mygo/frontend/dist/
 mygo/frontend/mygo.ts
 mygo/.mygo/
+mygo/rsrc_windows_*.syso
 mygo/evidence/
 .agents/
 .env

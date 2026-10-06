@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -48,6 +49,7 @@ type Desktop struct {
 	fixedShortcutTargets map[string]bool
 	sendMu               sync.Mutex
 	ctx                  context.Context
+	externalClient       *http.Client
 	proxyRequests        sync.Map
 	windows              map[string]*mygo.Window
 	static               map[string]object
@@ -86,7 +88,10 @@ func (d *Desktop) initialize(ctx context.Context) error {
 	if !d.store.HasPersisted("ongoing-game-main", "matchHistoryLoadCount") {
 		_ = d.store.Set("ongoing-game-main", "matchHistoryLoadCount", 20)
 	}
-	d.client = client.New(d.clientEvent)
+	d.externalClient = newExternalHTTPClient(d.store)
+	d.client = client.NewWithOptions(d.clientEvent, client.Options{SGPHTTPClient: &http.Client{
+		Transport: d.externalClient.Transport, Timeout: 15 * time.Second,
+	}})
 	d.client.SetEventHandler(func(uri, eventType string, data any) {
 		d.clientEvent("league-client-main", "lcu-event", uri, eventType, data)
 	})
@@ -114,7 +119,7 @@ func (d *Desktop) initialize(ctx context.Context) error {
 	d.automation = automation.New(d.client, d.store, d.emit)
 	d.misc = misc.New(d.client, d.store, d.emit)
 	d.respawn = respawn.New(d.client, d.platform, d.store, d.emit)
-	d.updater = selfupdate.New(selfupdate.Options{Directory: filepath.Join(dir, "new-updates"), Version: appVersion, Repository: updateRepository(), Emit: d.emit})
+	d.updater = selfupdate.New(selfupdate.Options{Directory: filepath.Join(dir, "new-updates"), Version: appVersion, Repository: updateRepository(), HTTP: &http.Client{Transport: d.externalClient.Transport, Timeout: 30 * time.Minute}, Emit: d.emit})
 	d.fixedShortcutTargets = map[string]bool{}
 	d.syncSendShortcuts()
 	d.champion = champion.New(d.client, d.store, d.emit)
@@ -133,29 +138,7 @@ func (d *Desktop) initialize(ctx context.Context) error {
 		}
 	}
 	d.game.SetMatchHistoryLoadCount(int(client.Number(d.settingValue("ongoing-game-main", "matchHistoryLoadCount"))))
-	d.store.OnChange(func(ns, key string) {
-		if ns == "app-common-main" && key == "disableHardwareAcceleration" {
-			d.update(ns, "state", "baseConfig", object{"disableHardwareAcceleration": d.store.Get(ns, key) == true})
-		}
-		if ns == "in-game-send-main" {
-			d.sendMu.Lock()
-			d.syncSendShortcuts()
-			d.sendMu.Unlock()
-		}
-		if ns == "league-client-main" && key == "autoConnect" {
-			d.client.SetAutoConnect(d.store.Get(ns, key) != false)
-		}
-		if ns == "ongoing-game-main" && key == "matchHistoryLoadCount" {
-			d.game.SetMatchHistoryLoadCount(int(client.Number(d.store.Get(ns, key))))
-		}
-		if key == "" {
-			for k, v := range d.store.Snapshot(ns) {
-				d.update(ns, "settings", k, v)
-			}
-			return
-		}
-		d.update(ns, "settings", key, d.store.Get(ns, key))
-	})
+	d.store.OnChange(d.settingChanged)
 	return nil
 }
 

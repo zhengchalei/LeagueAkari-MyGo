@@ -1,7 +1,9 @@
+param([string]$BuildDirectory = 'mygo/build')
+
 $ErrorActionPreference = 'Stop'
 $taskRoot = Split-Path -Parent $PSScriptRoot
 $taskVersion = (Get-Content -LiteralPath (Join-Path $taskRoot 'package.json') -Raw | ConvertFrom-Json).version
-$taskBuild = Join-Path $taskRoot 'mygo/build'
+$taskBuild = [IO.Path]::GetFullPath((Join-Path $taskRoot $BuildDirectory))
 $taskRelease = Join-Path $taskBuild "LeagueAkari-MyGo-$taskVersion-win-x64"
 $taskZip = "$taskRelease.zip"
 $taskFiles = @('LeagueAkari-MyGo.exe', 'LICENSE.txt', 'LeagueAkari-LICENSE.txt', 'MyGo-LICENSE.txt', 'THIRD_PARTY_NOTICES.md', 'README.md')

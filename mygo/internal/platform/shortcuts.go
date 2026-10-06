@@ -310,7 +310,7 @@ func (s *Service) shortcutCall(method string, args []any) (any, error) {
 
 func (s *Service) settingChanged(namespace, key string) {
 	if strings.HasPrefix(namespace, "window-manager-main/") && s.options.WindowAction != nil {
-		if key == "opacity" || key == "pinned" {
+		if key == "" || key == "opacity" || key == "pinned" {
 			_, _ = s.options.WindowAction(strings.TrimPrefix(namespace, "window-manager-main/"), "applySettings", nil)
 		}
 	}
@@ -322,7 +322,7 @@ func (s *Service) settingChanged(namespace, key string) {
 	if key == "showShortcut" || key == "terminateShortcut" || key == "" {
 		s.applyShortcutSettings()
 	}
-	if (key == "enabled" || key == "autoShow") && strings.HasPrefix(namespace, "window-manager-main/") {
+	if (key == "" || key == "enabled" || key == "autoShow") && strings.HasPrefix(namespace, "window-manager-main/") {
 		s.mu.Lock()
 		s.lastPhase = ""
 		s.mu.Unlock()

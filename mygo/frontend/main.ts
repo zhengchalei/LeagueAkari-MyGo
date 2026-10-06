@@ -25,6 +25,18 @@ import { manager } from "@main-window/shards";
 import { installSendSelection } from "./send-selection";
 
 try {
+  i18next.addResource(
+    "zh-CN",
+    "renderer",
+    "settings.savedSettings.import.dialogWarning",
+    "导入设置项将覆盖当前设置并立即应用。硬件加速设置将在下次启动时生效。是否继续？",
+  );
+  i18next.addResource(
+    "en",
+    "renderer",
+    "settings.savedSettings.import.dialogWarning",
+    "Importing overwrites your current settings and applies them immediately. Hardware acceleration changes take effect on the next launch. Continue?",
+  );
   dayjs.extend(relativeTime);
   dayjs.extend(duration);
 
