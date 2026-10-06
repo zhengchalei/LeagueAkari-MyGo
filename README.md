@@ -1,6 +1,6 @@
 # LeagueAkari-MyGo
 
-**v0.5.4 · 国服 LOL 战绩与选人助手的轻量版本。** 使用 [MyGo](https://github.com/egoist/mygo) 0.2.10，以 Go 后端和 Windows WebView2 承载原有 Vue 界面，替换 Electron 宿主。
+**v0.5.5 · 国服 LOL 战绩与选人助手的轻量版本。** 使用 [MyGo](https://github.com/egoist/mygo) 0.2.10，以 Go 后端和 Windows WebView2 承载原有 Vue 界面，替换 Electron 宿主。
 
 本项目基于 [LeagueAkari](https://github.com/LeagueAkari/LeagueAkari) 开发，是独立维护的非官方版本。感谢 Hanxven 与 LeagueAkari 贡献者提供原始界面和业务实现，感谢 egoist 与 MyGo 贡献者提供桌面框架。
 
@@ -12,6 +12,7 @@
 
 ## 功能
 
+- v0.5.5 修复进入对局后红方玩家重复显示在蓝队的问题：真实对局名单优先，跨队去重，选人缓存仅补充缺失玩家并按实际队伍归属还原。
 - v0.5.4 将 Mini 改为紧凑常显列表：增益绿色、减益红色，显示相对常规值的变化（例如伤害 −5%、承伤 −10%）。已有皮肤以卡片显示，保留已拥有筛选、炫彩与客户端确认；切换英雄时清除旧皮肤请求结果。辅助窗口首次默认高度为 620，仍优先恢复用户保存的窗口大小。
 - v0.5.3 接入 [Bilibili RESG](https://www.bilibili.com/toy/resg/index.html) 的独立海斗英雄调整：主窗口和 Mini 显示增益、减益、来源、数据版本及缓存状态，保留攻速增长等小数单位；未知调整保留原文说明。
 - v0.5.2 补齐聊天在线状态、选人／房间／赛后会话与成员同步，恢复选人和房间中的快捷文本发送；同步本人资料背景和登录排队信息，登录期间不会因召唤师尚未加载而误断连。英雄与可选／禁用列表通过事件实时更新。

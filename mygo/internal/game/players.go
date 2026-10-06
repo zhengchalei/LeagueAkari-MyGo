@@ -22,6 +22,7 @@ func (s *Service) collect(ctx context.Context, view map[string]any) (map[string]
 		return draftState(draft)
 	}
 	teams := map[string]any{}
+	playerTeams := map[string]string{}
 	selections := map[string]any{}
 	positions := map[string]any{}
 	flow := client.Map(view["gameflow"])
@@ -51,13 +52,11 @@ func (s *Service) collect(ctx context.Context, view map[string]any) (map[string]
 		if !validPUUID(puuid) {
 			return
 		}
-		members := client.List(teams[team])
-		for _, member := range members {
-			if member == puuid {
-				return
-			}
+		if _, exists := playerTeams[puuid]; exists {
+			return
 		}
-		teams[team] = append(members, puuid)
+		teams[team] = append(client.List(teams[team]), puuid)
+		playerTeams[puuid] = team
 		selections[puuid] = client.Number(row["championId"])
 		position := client.String(row["assignedPosition"])
 		if position == "" {
@@ -115,6 +114,9 @@ func (s *Service) collect(ctx context.Context, view map[string]any) (map[string]
 				}
 			}
 			teams = map[string]any{"TEAM-ALL": all}
+			for _, member := range all {
+				playerTeams[client.String(member)] = "TEAM-ALL"
+			}
 			gameInfo["queueType"] = "CHERRY"
 			gameInfo["gameMode"] = "CHERRY"
 		}
@@ -147,16 +149,20 @@ func (s *Service) collect(ctx context.Context, view map[string]any) (map[string]
 			for team, members := range client.Map(snapshot["teams"]) {
 				if gameInfo["gameMode"] == "CHERRY" || gameInfo["queueType"] == "CHERRY" {
 					team = "TEAM-ALL"
-				}
-				for _, puuid := range client.List(members) {
-					missing := true
-					for _, current := range client.List(teams[team]) {
-						if current == puuid {
-							missing = false
+				} else {
+					// Champ-select sides are relative to the local player; use live teammates
+					// to place any missing cached members on the actual blue/red side.
+					for _, member := range client.List(members) {
+						if currentTeam, exists := playerTeams[client.String(member)]; exists {
+							team = currentTeam
+							break
 						}
 					}
-					if missing {
+				}
+				for _, puuid := range client.List(members) {
+					if _, exists := playerTeams[client.String(puuid)]; !exists {
 						teams[team] = append(client.List(teams[team]), puuid)
+						playerTeams[client.String(puuid)] = team
 					}
 				}
 			}
