@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -147,12 +148,37 @@ func (windowsNative) Launch(path string, args []string) error {
 	if !existingFile(path) {
 		return errors.New("客户端可执行文件不存在")
 	}
-	command := exec.Command(path, args...)
-	command.SysProcAttr = &syscall.SysProcAttr{HideWindow: true, CreationFlags: 0x00000200 | 0x00000008}
-	if err := command.Start(); err != nil {
+	// Request elevation for the launcher directly; the assistant keeps its
+	// existing permissions and Windows owns the authorization prompt.
+	return launchElevatedClient(path, args)
+}
+
+func launchElevatedClient(path string, args []string) error {
+	quoted := make([]string, len(args))
+	for i, argument := range args {
+		quoted[i] = syscall.EscapeArg(argument)
+	}
+	verb, _ := syscall.UTF16PtrFromString("runas")
+	executable, err := syscall.UTF16PtrFromString(path)
+	if err != nil {
 		return err
 	}
-	return command.Process.Release()
+	parameters, err := syscall.UTF16PtrFromString(strings.Join(quoted, " "))
+	if err != nil {
+		return err
+	}
+	directory, err := syscall.UTF16PtrFromString(filepath.Dir(path))
+	if err != nil {
+		return err
+	}
+	result, _, _ := syscall.NewLazyDLL("shell32.dll").NewProc("ShellExecuteW").Call(
+		0, uintptr(unsafe.Pointer(verb)), uintptr(unsafe.Pointer(executable)),
+		uintptr(unsafe.Pointer(parameters)), uintptr(unsafe.Pointer(directory)), 1,
+	)
+	if result <= 32 {
+		return fmt.Errorf("客户端需要管理员权限，但启动未获授权或启动失败；请在 Windows 授权窗口中选择“是”，或通过 WeGame 手动启动（系统代码 %d）", result)
+	}
+	return nil
 }
 func (windowsNative) ForegroundPID() int {
 	window, _, _ := user32.NewProc("GetForegroundWindow").Call()

@@ -1,6 +1,6 @@
 {
   "name": "leagueakari-mygo",
-  "version": "0.5.5",
+  "version": "0.5.6",
   "private": true,
   "description": "基于 MyGo 的轻量级国服 LOL 战绩与选人助手，源自 LeagueAkari",
   "main": "app/main.cjs",
