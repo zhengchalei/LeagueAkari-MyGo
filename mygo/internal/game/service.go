@@ -28,6 +28,12 @@ type Service struct {
 	mu                  sync.RWMutex
 	refreshMu           sync.Mutex
 	timelineMu          sync.Mutex
+	timelineRequests    map[string]chan struct{}
+	lcuSummaryMu        sync.Mutex
+	lcuSummaryRequests  map[string]chan struct{}
+	lcuSummaries        map[string]summaryWrapper
+	lcuSummaryOrder     []string
+	lcuSummaryGate      chan struct{}
 	backend             Backend
 	emit                bridge.Emitter
 	state               map[string]any
@@ -140,8 +146,8 @@ func (s *Service) SetMatchHistoryLoadCount(count int) {
 	if count < 1 {
 		count = 1
 	}
-	if count > 50 {
-		count = 50
+	if count > 200 {
+		count = 200
 	}
 	s.mu.Lock()
 	s.count = count
@@ -152,6 +158,8 @@ func (s *Service) SetMatchHistoryLoadCount(count int) {
 func (s *Service) Refresh(ctx context.Context) error {
 	s.refreshMu.Lock()
 	defer s.refreshMu.Unlock()
+	ctx, release := s.requestScope(ctx)
+	defer release()
 	var view map[string]any
 	if gameplay, ok := s.backend.(interface{ GameplayState() map[string]any }); ok {
 		view = gameplay.GameplayState()
@@ -236,6 +244,8 @@ func (s *Service) Refresh(ctx context.Context) error {
 	for puuid := range players {
 		s.loadSavedInfo(puuid, false)
 	}
+	ctx, finishPrefetch := s.startDetailsPrefetch(ctx, config.detailsCount, config.concurrency)
+	defer finishPrefetch()
 	var wg sync.WaitGroup
 	gate := make(chan struct{}, config.concurrency)
 	for puuid := range players {
@@ -256,7 +266,6 @@ func (s *Service) Refresh(ctx context.Context) error {
 	}
 	wg.Wait()
 	s.loadAuxiliaryInfo(ctx)
-	s.syncPrefetchedDetails(ctx, config.detailsCount, config.concurrency)
 	s.remindTaggedPlayers(ctx)
 	return ctx.Err()
 }
@@ -329,7 +338,12 @@ func (s *Service) loadMatchHistory(ctx context.Context, puuid string, force bool
 	}
 	games, source, err := s.history(ctx, puuid, count, query)
 	if err != nil {
-		s.loading("matchHistory", puuid, "error")
+		if ctx.Err() == nil {
+			s.loading("matchHistory", puuid, "error")
+		}
+		return err
+	}
+	if err := ctx.Err(); err != nil {
 		return err
 	}
 	// Only summaries are retained. Timeline DETAILS must be explicitly requested.
@@ -345,16 +359,43 @@ func (s *Service) loadMatchHistory(ctx context.Context, puuid string, force bool
 		s.historyGameIDs[puuid] = ids
 	}
 	s.mu.Unlock()
+	notifyPrefetch(ctx)
 	return nil
 }
 
 func (s *Service) GetTimeline(ctx context.Context, server string, gameID int64) (any, error) {
-	s.timelineMu.Lock()
-	defer s.timelineMu.Unlock()
+	ctx, release := s.requestScope(ctx)
+	defer release()
 	if server == "" {
 		server = s.backend.CurrentServer()
 	}
 	key := server + ":" + strconv.FormatInt(gameID, 10)
+	// Coalesce requests for the same game without serializing unrelated games.
+	for {
+		s.timelineMu.Lock()
+		if done := s.timelineRequests[key]; done != nil {
+			s.timelineMu.Unlock()
+			select {
+			case <-done:
+				continue
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+		}
+		if s.timelineRequests == nil {
+			s.timelineRequests = make(map[string]chan struct{})
+		}
+		done := make(chan struct{})
+		s.timelineRequests[key] = done
+		s.timelineMu.Unlock()
+		defer func() {
+			s.timelineMu.Lock()
+			delete(s.timelineRequests, key)
+			close(done)
+			s.timelineMu.Unlock()
+		}()
+		break
+	}
 	s.mu.RLock()
 	cached, exists := s.timelines[key]
 	s.mu.RUnlock()
@@ -363,6 +404,9 @@ func (s *Service) GetTimeline(ctx context.Context, server string, gameID int64) 
 	}
 	data, source, err := s.timeline(ctx, server, gameID)
 	if err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
 	encoded, err := json.Marshal(map[string]any{"source": source, "gameId": gameID, "data": data})

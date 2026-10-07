@@ -44,6 +44,12 @@ func copyFile(source, target string) error {
 	return closeErr
 }
 func RunHelper(args []string) (bool, error) {
+	if len(args) > 0 && args[0] == "--uninstall-winui" {
+		return true, runWinUIUninstallHelper(args)
+	}
+	if len(args) > 0 && args[0] == "--apply-winui-update" {
+		return true, runWinUIUpdateHelper(args)
+	}
 	if len(args) > 0 && args[0] == "--uninstall-portable" {
 		return true, uninstallPortable(args)
 	}

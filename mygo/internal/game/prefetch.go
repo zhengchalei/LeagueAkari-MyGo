@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"sync"
+	"time"
 
 	"github.com/zhengchalei/LeagueAkari-MyGo/mygo/internal/client"
 )
@@ -46,7 +48,106 @@ func (s *Service) timeline(ctx context.Context, server string, gameID int64) (an
 	return data, source, err
 }
 
-func (s *Service) syncPrefetchedDetails(ctx context.Context, count, concurrency int) {
+type prefetchNotificationKey struct{}
+
+func notifyPrefetch(ctx context.Context) {
+	if notify, ok := ctx.Value(prefetchNotificationKey{}).(func()); ok {
+		notify()
+	}
+}
+
+// MobX reaction's delay batches changes from the first arrival; later arrivals
+// do not postpone that window or wait for all players' histories to finish.
+func (s *Service) startDetailsPrefetch(ctx context.Context, count, concurrency int) (context.Context, func()) {
+	changed, finished, done := make(chan struct{}, 1), make(chan struct{}), make(chan struct{})
+	ready := make(chan struct{})
+	finishSignal := finished
+	notify := func() {
+		select {
+		case changed <- struct{}{}:
+		default:
+		}
+	}
+	go func() {
+		defer close(done)
+		gate := make(chan struct{}, max(1, concurrency))
+		var pending sync.WaitGroup
+		var mu sync.Mutex
+		inFlight := map[int64]bool{}
+		var timer *time.Timer
+		var tick <-chan time.Time
+		finishing := false
+		flush := func() {
+			if ctx.Err() != nil {
+				return
+			}
+			server, missing := s.prefetchCandidates(count)
+			for _, id := range missing {
+				mu.Lock()
+				if inFlight[id] {
+					mu.Unlock()
+					continue
+				}
+				inFlight[id] = true
+				mu.Unlock()
+				pending.Add(1)
+				go func(id int64) {
+					defer pending.Done()
+					defer func() { mu.Lock(); delete(inFlight, id); mu.Unlock() }()
+					select {
+					case gate <- struct{}{}:
+					case <-ctx.Done():
+						return
+					}
+					defer func() { <-gate }()
+					_, _ = s.GetTimeline(ctx, server, id)
+				}(id)
+			}
+		}
+		flush()
+		close(ready)
+		for {
+			select {
+			case <-changed:
+				if tick == nil {
+					timer = time.NewTimer(300 * time.Millisecond)
+					tick = timer.C
+				}
+			case <-tick:
+				tick = nil
+				flush()
+				if finishing {
+					pending.Wait()
+					return
+				}
+			case <-finished:
+				finished = nil
+				finishing = true
+				// Histories finished before their notification was consumed.
+				if tick == nil {
+					select {
+					case <-changed:
+						timer = time.NewTimer(300 * time.Millisecond)
+						tick = timer.C
+					default:
+						pending.Wait()
+						return
+					}
+				}
+			case <-ctx.Done():
+				if timer != nil {
+					timer.Stop()
+				}
+				pending.Wait()
+				return
+			}
+		}
+	}()
+	<-ready
+	return context.WithValue(ctx, prefetchNotificationKey{}, notify), func() { close(finishSignal); <-done }
+}
+
+func (s *Service) prefetchCandidates(count int) (string, []int64) {
 	server := s.backend.CurrentServer()
 	wanted := map[string]bool{}
 	s.mu.Lock()
@@ -84,12 +185,5 @@ func (s *Service) syncPrefetchedDetails(ctx context.Context, count, concurrency 
 			s.emit("ongoing-game-main", "game-details-removed", id)
 		}
 	}
-	// The shared timeline lock serializes expensive DETAILS decodes. Each ID is
-	// fetched once; default zero never schedules this work.
-	for _, id := range missing {
-		if ctx.Err() != nil {
-			return
-		}
-		_, _ = s.GetTimeline(ctx, server, id)
-	}
+	return server, missing
 }

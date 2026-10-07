@@ -83,6 +83,7 @@ type Service struct {
 	lastCodes, statefulCodes []uint32
 	lastPhase                string
 	lastTimerPoll            time.Time
+	lastTimerUse             bool
 	hookReady                bool
 	hookError                string
 	unsubscribe              func()

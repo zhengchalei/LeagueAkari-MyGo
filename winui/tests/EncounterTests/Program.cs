@@ -1,0 +1,38 @@
+using System.Text.Json;
+using LeagueAkari.WinUI.Services;
+
+int passed = 0;
+void Check(string name, bool condition) { if (!condition) throw new Exception(name); passed++; Console.WriteLine("PASS " + name); }
+JsonElement Game(bool cherry = false, bool missing = false) => JsonSerializer.SerializeToElement(new { gameId = 99, queueId = cherry ? 1700 : 2400, gameMode = cherry ? "CHERRY" : "ARAM", gameCreation = 1700000000000L, participants = new[] { new { participantId = 1, championId = 1, teamId = 100, puuid = "self", riotIdGameName = "Self", riotIdTagline = "S", profileIcon = 12, win = true, kills = 1, deaths = 2, assists = 3, playerSubteamId = 1, subteamPlacement = 1 }, new { participantId = 2, championId = 2, teamId = 100, puuid = missing ? "other" : "ally", riotIdGameName = "Ally", riotIdTagline = "A", profileIcon = 13, win = true, kills = 4, deaths = 5, assists = 6, playerSubteamId = 2, subteamPlacement = 2 }, new { participantId = 3, championId = 3, teamId = 200, puuid = "enemy", riotIdGameName = "Enemy", riotIdTagline = "E", profileIcon = 14, win = false, kills = 7, deaths = 8, assists = 9, playerSubteamId = 3, subteamPlacement = 3 }, new { participantId = 4, championId = 4, teamId = 200, puuid = "00000000-0000-0000-0000-000000000000", riotIdGameName = "Hidden", riotIdTagline = "", profileIcon = 0, win = false, kills = 0, deaths = 0, assists = 0, playerSubteamId = 4, subteamPlacement = 4 } } });
+Check("One game does not count as a recent relationship", EncounterData.RecentPlayers([Game()], "self").Length == 0);
+var recent = EncounterData.RecentPlayers([Game(), Game()], "self");
+Check("Each side needs two games", recent.Length == 2 && recent.All(p => p.Games == 2));
+Check("Self and empty PUUID are excluded", recent.All(p => p.Puuid is not "self" and not "00000000-0000-0000-0000-000000000000"));
+Check("Ally keeps wins", recent.First(p => p.Puuid == "ally").Wins == 2);
+Check("Opponent win result flips to viewed-player perspective", recent.First(p => p.Puuid == "enemy").Wins == 2);
+Check("Name tag icon retained from first summary", recent[0].Name == "Ally" && recent[0].Tag == "A" && recent[0].ProfileIconId == 13);
+Check("Cherry subteams define opponents, even same teamId", EncounterData.RecentPlayers([Game(true), Game(true)], "self").All(p => p.IsOpponent));
+var record = EncounterRecord.Parse(JsonSerializer.SerializeToElement(new { id = 5, gameId = 99, puuid = "ally", selfPuuid = "self", queueType = "KIWI", updateAt = "2026-10-07T01:00:00Z" }));
+Check("Saved queue type remains a string", record.QueueType == "KIWI");
+var unavailable = EncounterData.Project(record, default)!;
+Check("Unavailable summary preserves string queue and saved date", unavailable.QueueName == "KIWI" && unavailable.PlayedAt == record.RecordedAt && unavailable.IsOpponent is null);
+var encounter = EncounterData.Project(record, Game())!;
+Check("Resolved queue comes from actual summary", encounter.QueueName == "海克斯大乱斗");
+Check("Resolved date comes from game, not record timestamp", encounter.PlayedAt == DateTimeOffset.FromUnixTimeMilliseconds(1700000000000));
+Check("Encounter identities compare teams", encounter.IsOpponent == false && encounter.Self!.Puuid == "self" && encounter.Target!.Puuid == "ally");
+Check("Both champions and KDA preserved", encounter.Self!.ChampionId == 1 && encounter.Target!.ChampionId == 2 && encounter.Target.Kills == 4 && encounter.Target.Deaths == 5 && encounter.Target.Assists == 6);
+Check("Resolved missing participant omitted like upstream", EncounterData.Project(record, Game(missing: true)) is null);
+Check("Cherry encounter compares subteams and retains placement", EncounterData.Project(record, Game(true)) is { IsOpponent: true, Self.Placement: 1, Target.Placement: 2 });
+Check("SGP wrapped JSON projects identically", EncounterData.Project(record, JsonSerializer.SerializeToElement(new { json = Game() }))!.Target!.Kills == 4);
+Check("Catalog queue name overrides static fallback", EncounterData.Project(record, Game(), _ => "Catalog name")!.QueueName == "Catalog name");
+Check("Saved encounters disabled for self", !EncounterData.CanLoadSaved("self", "self", false));
+Check("Saved encounters disabled cross-region", !EncounterData.CanLoadSaved("ally", "self", true));
+Check("Saved encounters enabled for same-region other player", EncounterData.CanLoadSaved("ally", "self", false));
+var lcu = JsonSerializer.SerializeToElement(new { gameId = 99, queueId = 450, gameCreation = 1700000000000L, participants = new[] { new { participantId = 1, championId = 1, teamId = 100, stats = new { win = true, kills = 1, deaths = 2, assists = 3 } }, new { participantId = 2, championId = 2, teamId = 100, stats = new { win = true, kills = 4, deaths = 5, assists = 6 } } }, participantIdentities = new[] { new { participantId = 1, player = new { puuid = "self", gameName = "LCU self", tagLine = "S", profileIcon = 12 } }, new { participantId = 2, player = new { puuid = "ally", gameName = "LCU ally", tagLine = "A", profileIcon = 13 } } } });
+Check("LCU identities resolve both encounter participants", EncounterData.Project(record, lcu)!.Target!.Kills == 4);
+var lcuRecent = EncounterData.RecentPlayers([lcu, lcu], "self").Single();
+Check("LCU identity profile icon and name retained", lcuRecent.ProfileIconId == 13 && lcuRecent.Name == "LCU ally");
+Check("LCU stats source counts wins", lcuRecent.Wins == 2 && lcuRecent.Losses == 0);
+Check("Target missing from a history game does not build relationships", EncounterData.RecentPlayers([lcu, lcu], "not-in-game").Length == 0);
+Check("Invalid saved date remains unavailable", EncounterRecord.Parse(JsonSerializer.SerializeToElement(new { updateAt = "not-a-date" })).RecordedAt is null);
+Console.WriteLine($"Encounter business fixtures: {passed} passed");

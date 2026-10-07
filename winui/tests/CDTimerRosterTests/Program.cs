@@ -1,0 +1,40 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using LeagueAkari.WinUI.Services;
+int checks = 0;
+void Check(bool value, string name) { if (!value) throw new Exception(name); checks++; }
+JsonElement J(object? value) => JsonSerializer.SerializeToElement(value);
+var platform = J(new { supportedGameModes = new[] { new { gameMode = "KIWI", abilityHaste = 70 } } });
+var flow = JsonNode.Parse("""
+{"phase":"InProgress","session":{"gameData":{"queue":{"gameMode":"KIWI"},"teamOne":[{"puuid":"self"},{"puuid":"same"}],"teamTwo":[{"puuid":"support","selectedPosition":"SUPPORT"},{"puuid":"top","selectedPosition":"TOP"},{"puuid":"mid","selectedPosition":"MID"}],"playerChampionSelections":[{"puuid":"support","championId":1,"spell1Id":4,"spell2Id":7},{"puuid":"top","championId":2,"spell1Id":4,"spell2Id":12},{"puuid":"mid","championId":3,"spell1Id":4,"spell2Id":14},{"puuid":"same","championId":9,"spell1Id":4,"spell2Id":7}]}}}
+""")!;
+var summoner = J(new { me = new { puuid = "self" } });
+CDTimerRow[] Read(object? ongoing = null) => CDTimerRoster.Read(J(flow), summoner, J(ongoing), platform, "countdown");
+var rows = Read();
+Check(rows.Select(row => row.Hero).SequenceEqual(new[] { 2, 3, 1 }), "Position aliases sort original enemy order");
+Check(rows[0].FirstKey == "champion-top-2-4" && rows[0].SecondKey == "champion-top-2-12", "Original timer identity");
+Check(rows.All(row => row.Type == "countdown"), "Configured timer mode");
+var missingSelf = CDTimerRoster.Read(J(flow), J(new { me = (object?)null }), J(null), platform, "countdown");
+Check(missingSelf.Length == 5 && missingSelf.All(row => row.Hero == 0 && row.Type == "countup"), "No summoner produces custom stopwatches");
+flow["phase"] = "Lobby"; Check(Read().All(row => row.Hero == 0), "Lobby uses custom timers"); flow["phase"] = "InProgress";
+Check(CDTimerRoster.Read(J(flow), summoner, J(null), J(new { supportedGameModes = Array.Empty<object>() }), "countup").All(row => row.Hero == 0), "Unsupported mode uses custom timers");
+var authoritative = new { teams = new Dictionary<string, string[]> { ["TEAM-100"] = ["self"], ["TEAM-200"] = ["mid", "support"] } };
+Check(Read(authoritative).Select(row => row.Hero).SequenceEqual(new[] { 3, 1 }), "Authoritative roster excludes stale draft enemy");
+var additional = new { additional = new { positions = new Dictionary<string, object> { ["support"] = new { position = "JUNGLE" } }, selections = new Dictionary<string, int> { ["mid"] = 17 }, spells = new Dictionary<string, object> { ["mid"] = new { spell1Id = 11, spell2Id = 4 } } } };
+Check(Read(additional).Select(row => row.Hero).SequenceEqual(new[] { 2, 1, 17 }), "Cached position/champion overrides gameflow");
+Check(Read(additional).Last().FirstSpell == 11, "Cached spells retained");
+Check(CDTimerData.CountdownTarget(0, 300, 70) == 176470, "ARAM/KIWI haste formula");
+Check(CDTimerData.Adjust("countdown", 20000, 120, false, 0) == 14000, "Win32 upward wheel reduces cooldown");
+Check(CDTimerData.Adjust("countup", 20000, -120, false, 21000) == 21000, "Stopwatch clamp at current time");
+Check(CDTimerData.Display("countdown", 0, 1) == "OK", "Expired countdown display");
+long almostFinished=CDTimerData.Adjust("countdown",2000,120,false,1000);
+Check(almostFinished==1000&&CDTimerData.AdjustmentIndicatorDelta("countdown",2000,almostFinished,120,false)==-6000,"Countdown clamp does not change original requested wheel indicator");
+long clampedStopwatch=CDTimerData.Adjust("countup",20000,-120,false,21000);
+Check(CDTimerData.AdjustmentIndicatorDelta("countup",20000,clampedStopwatch,-120,false)==1000,"Stopwatch indicator reports actual clamped baseline adjustment");
+Check(CDTimerData.AdjustmentIndicatorDelta("countdown",2000,8000,120,true)==6000,"Reversed countdown indicator follows original raw wheel direction");
+Check(CDTimerData.SendFailureKey("GameClientNotForeground: game client is not foreground")=="cdTimer.window.gameNotForeground","Original IPC foreground code maps to dedicated message");
+Check(CDTimerData.SendFailureKey("LOL 游戏未处于前台")=="cdTimer.window.gameNotForeground","Go pre-send foreground rejection maps to original message");
+Check(CDTimerData.SendFailureKey("LOL 游戏已离开前台")=="cdTimer.window.gameNotForeground","Go mid-send foreground rejection maps to original message");
+Check(CDTimerData.SendFailureKey("AlreadySending")=="cdTimer.window.alreadySending","Original concurrent send code retains dedicated message");
+Check(CDTimerData.SendFailureKey("native input failed")=="cdTimer.window.sendFailed","Other failures retain detailed generic error");
+Console.WriteLine($"{checks} original CD roster and timer behavior fixtures passed.");

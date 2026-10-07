@@ -28,8 +28,14 @@ func chatRoomType(conversation any) string {
 
 // The renderer's chat store is shallow reactive, so room updates replace the
 // complete conversations/participants object instead of mutating its children.
-func (c *Client) updateChatRooms(update func(conversations, participants map[string]any)) {
+func (c *Client) updateChatRooms(update func(conversations, participants map[string]any), scopes ...context.Context) {
+	c.stateUpdateMu.Lock()
+	defer c.stateUpdateMu.Unlock()
 	c.mu.Lock()
+	if len(scopes) > 0 && !c.connectionCurrentLocked(scopes[0]) {
+		c.mu.Unlock()
+		return
+	}
 	chat := Map(c.state["chat"])
 	conversations := Map(Clone(chat["conversations"]))
 	participants := Map(Clone(chat["participants"]))
@@ -48,7 +54,7 @@ func (c *Client) updateChatRooms(update func(conversations, participants map[str
 	}
 }
 
-func (c *Client) replaceChatConversations(value any) {
+func (c *Client) replaceChatConversations(value any, scopes ...context.Context) {
 	rooms := map[string]any{}
 	for _, conversation := range List(value) {
 		if kind := chatRoomType(conversation); kind != "" {
@@ -65,10 +71,10 @@ func (c *Client) replaceChatConversations(value any) {
 			}
 			conversations[kind] = conversation
 		}
-	})
+	}, scopes...)
 }
 
-func (c *Client) setChatConversation(value any) {
+func (c *Client) setChatConversation(value any, scopes ...context.Context) {
 	kind := chatRoomType(value)
 	if kind == "" {
 		return
@@ -78,17 +84,17 @@ func (c *Client) setChatConversation(value any) {
 			participants[kind] = []any{}
 		}
 		conversations[kind] = value
-	})
+	}, scopes...)
 }
 
-func (c *Client) deleteChatConversation(id string) {
+func (c *Client) deleteChatConversation(id string, scopes ...context.Context) {
 	c.updateChatRooms(func(conversations, participants map[string]any) {
 		for _, kind := range chatRoomTypes {
 			if String(Map(conversations[kind])["id"]) == id {
 				conversations[kind], participants[kind] = nil, nil
 			}
 		}
-	})
+	}, scopes...)
 }
 
 func participantIDs(value any) []any {
@@ -104,17 +110,17 @@ func participantIDs(value any) []any {
 	return ids
 }
 
-func (c *Client) setChatParticipants(conversationID string, value any) {
+func (c *Client) setChatParticipants(conversationID string, value any, scopes ...context.Context) {
 	c.updateChatRooms(func(conversations, participants map[string]any) {
 		for _, kind := range chatRoomTypes {
 			if String(Map(conversations[kind])["id"]) == conversationID {
 				participants[kind] = participantIDs(value)
 			}
 		}
-	})
+	}, scopes...)
 }
 
-func (c *Client) changeChatParticipant(conversationID string, id int64, remove bool) {
+func (c *Client) changeChatParticipant(conversationID string, id int64, remove bool, scopes ...context.Context) {
 	if id <= 0 {
 		return
 	}
@@ -139,7 +145,7 @@ func (c *Client) changeChatParticipant(conversationID string, id int64, remove b
 			}
 			participants[kind] = ids
 		}
-	})
+	}, scopes...)
 }
 
 func (c *Client) syncChat(ctx context.Context) {
@@ -147,7 +153,7 @@ func (c *Client) syncChat(ctx context.Context) {
 	if err != nil {
 		return // Riot chat can become ready after the local client connects.
 	}
-	c.replaceChatConversations(value)
+	c.replaceChatConversations(value, ctx)
 	var wg sync.WaitGroup
 	for _, conversation := range List(value) {
 		if chatRoomType(conversation) == "" {
@@ -158,19 +164,19 @@ func (c *Client) syncChat(ctx context.Context) {
 		go func() {
 			defer wg.Done()
 			if participants, err := c.JSON(ctx, http.MethodGet, "/lol-chat/v1/conversations/"+url.PathEscape(id)+"/participants", nil); err == nil {
-				c.setChatParticipants(id, participants)
+				c.setChatParticipants(id, participants, ctx)
 			}
 		}()
 	}
 	wg.Wait()
 }
 
-func (c *Client) dispatchChatEvent(uri, eventType string, rawData any) {
+func (c *Client) dispatchChatEvent(uri, eventType string, rawData any, scopes ...context.Context) {
 	if uri == "/lol-chat/v1/conversations" {
 		if eventType == "Delete" {
 			rawData = nil
 		}
-		c.replaceChatConversations(rawData)
+		c.replaceChatConversations(rawData, scopes...)
 		return
 	}
 	if !strings.HasPrefix(uri, "/lol-chat/v1/conversations/") {
@@ -183,9 +189,9 @@ func (c *Client) dispatchChatEvent(uri, eventType string, rawData any) {
 	}
 	if len(parts) == 1 {
 		if eventType == "Delete" {
-			c.deleteChatConversation(id)
+			c.deleteChatConversation(id, scopes...)
 		} else {
-			c.setChatConversation(rawData)
+			c.setChatConversation(rawData, scopes...)
 		}
 		return
 	}
@@ -194,18 +200,18 @@ func (c *Client) dispatchChatEvent(uri, eventType string, rawData any) {
 			if eventType == "Delete" {
 				rawData = nil
 			}
-			c.setChatParticipants(id, rawData)
+			c.setChatParticipants(id, rawData, scopes...)
 		} else if len(parts) == 3 {
 			participantID := Number(Map(rawData)["summonerId"])
 			if participantID == 0 {
 				participantID, _ = strconv.ParseInt(parts[2], 10, 64)
 			}
-			c.changeChatParticipant(id, participantID, eventType == "Delete")
+			c.changeChatParticipant(id, participantID, eventType == "Delete", scopes...)
 		}
 	} else if parts[1] == "messages" && len(parts) == 3 && eventType != "Delete" {
 		message := Map(rawData)
 		if String(message["type"]) == "system" && String(message["body"]) == "joined_room" {
-			c.changeChatParticipant(id, Number(message["fromSummonerId"]), false)
+			c.changeChatParticipant(id, Number(message["fromSummonerId"]), false, scopes...)
 		}
 	}
 }

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../LeagueAkari.WinUI/Services/AutoSelectData.cs" Link="AutoSelectData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/NativePinyin.cs" Link="NativePinyin.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/NativePinyinData.cs" Link="NativePinyinData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/ChampionConfigDraft.cs" Link="ChampionConfigDraft.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/OngoingPlayerActions.cs" Link="OngoingPlayerActions.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/HistoryCardData.cs" Link="HistoryCardData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/ReplayService.cs" Link="ReplayService.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/NativeDialogQueue.cs" Link="NativeDialogQueue.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/CDTimerData.cs" Link="CDTimerData.cs" />
+    <Compile Include="../FixtureBackend/FixtureNotifications.cs" Link="FixtureNotifications.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/MatchDetailsData.cs" Link="MatchDetailsData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/MatchTeamData.cs" Link="MatchTeamData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/MatchRadarData.cs" Link="MatchRadarData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/MiniSkinData.cs" Link="MiniSkinData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/MiniInteractionState.cs" Link="MiniInteractionState.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/MatchData.cs" Link="MatchData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/PlayerDataSource.cs" Link="PlayerDataSource.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/SourceAvailability.cs" Link="SourceAvailability.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/JsonExtensions.cs" Link="JsonExtensions.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pinyin-oracle.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../desktop/src/shared/test-fixtures/api/snapshots/2026-05-16-tencent-hn10/lcu/match-history/games/q_2400.json" Link="snapshots/lcu-game.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../desktop/src/shared/test-fixtures/api/snapshots/2026-05-16-tencent-hn10/lcu/match-history/timelines/q_2400.json" Link="snapshots/lcu-timeline.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../desktop/src/shared/test-fixtures/api/snapshots/2026-05-16-tencent-hn10/sgp/match-history-query/q_2400.json" Link="snapshots/sgp-summary.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

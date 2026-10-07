@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/egoist/mygo"
 	"github.com/zhengchalei/LeagueAkari-MyGo/mygo/internal/catalog"
 )
 
@@ -71,7 +70,7 @@ func (d *Desktop) fetchKiwiBalance(ctx context.Context, sourceURL, directory str
 }
 
 func (d *Desktop) refreshKiwiBalance(ctx context.Context) {
-	directory, _ := mygo.App.Path(mygo.PathUserData)
+	directory, _ := d.userDataDirectory()
 	for ctx.Err() == nil {
 		if err := d.fetchKiwiBalance(ctx, catalog.KiwiSourceURL, directory); err != nil && ctx.Err() == nil {
 			log.Printf("RESG balance refresh unavailable; retaining cached data: %v", err)

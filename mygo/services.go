@@ -25,11 +25,16 @@ import (
 )
 
 func (d *Desktop) migrateStorage() {
-	base, err := os.UserConfigDir()
-	if err != nil {
-		return
+	var paths []string
+	if !d.skipExternalStorageMigration {
+		base, err := os.UserConfigDir()
+		if err != nil {
+			return
+		}
+		paths = []string{filepath.Join(base, "Timo", "LeagueAkari.db"), filepath.Join(base, "league-akari", "LeagueAkari.db")}
 	}
-	paths := []string{filepath.Join(base, "Timo", "LeagueAkari.db"), filepath.Join(base, "league-akari", "LeagueAkari.db")}
+	// Explicit WinUI profiles never import other applications' directories.
+	// Migration(nil) still upgrades early records already saved in this profile.
 	report, err := d.player.Migration(paths)
 	if err != nil {
 		log.Printf("Legacy migration: %v", err)
@@ -52,6 +57,12 @@ func (d *Desktop) prepareQuit(dataDirectory string) {
 		d.player.Close()
 	}
 	if d.updater != nil && d.updater.Prepared() != "" {
+		if d.hostCall != nil {
+			if err := selfupdate.LaunchWinUIApply(d.updater.Prepared(), d.winUIHostExecutable, d.winUIHostPID, dataDirectory); err != nil {
+				log.Printf("WinUI directory update: %v", err)
+			}
+			return
+		}
 		executable, err := os.Executable()
 		if err == nil {
 			err = selfupdate.LaunchApply(d.updater.Prepared(), executable, dataDirectory)
@@ -78,7 +89,7 @@ func (d *Desktop) updateCall(ctx context.Context, method string, args []any) (an
 	case "cancelUpdate":
 		return d.updater.Cancel(), nil
 	case "openNewUpdatesDir":
-		dir, _ := mygo.App.Path(mygo.PathUserData)
+		dir, _ := d.userDataDirectory()
 		path := filepath.Join(dir, "new-updates")
 		if err := os.MkdirAll(path, 0700); err != nil {
 			return nil, err
@@ -101,7 +112,7 @@ func (d *Desktop) uninstall(ctx context.Context) (any, error) {
 	if err != nil {
 		return nil, err
 	}
-	dataDirectory, _ := mygo.App.Path(mygo.PathUserData)
+	dataDirectory, _ := d.userDataDirectory()
 	if err = selfupdate.LaunchUninstall(target, dataDirectory, response.CheckboxChecked); err != nil {
 		return nil, err
 	}
@@ -274,7 +285,7 @@ func (d *Desktop) refreshRemoteResources(ctx context.Context) {
 		source = "https://gitee.com/LeagueAkari/LeagueAkari-Config/raw/main/config/"
 	}
 	resources := map[string]string{"leagueServers": "sgp/league-servers", "supportedQueues": "sgp/supported-queues", "ongoingGameConfig": "ongoing-game/config", "autoSelectGroups": "auto-select/groups"}
-	directory, _ := mygo.App.Path(mygo.PathUserData)
+	directory, _ := d.userDataDirectory()
 	var wg sync.WaitGroup
 	for key, path := range resources {
 		wg.Add(1)

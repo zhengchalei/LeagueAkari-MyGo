@@ -1,0 +1,1222 @@
+[
+  {
+    "queue": "q_420",
+    "puuid": "00000000-0000-4000-8000-000000000007",
+    "jungle": {
+      "gamesAnalyzed": 1,
+      "topZoneWeightSum": 24,
+      "midZoneWeightSum": 17,
+      "botZoneWeightSum": 23,
+      "totalZoneWeightSum": 64,
+      "avgTopZonePercentage": 0.375,
+      "avgMidZonePercentage": 0.265625,
+      "avgBotZonePercentage": 0.359375,
+      "totalTopGanks": 4,
+      "totalMidGanks": 3,
+      "totalBotGanks": 2,
+      "avgTopGanks": 4,
+      "avgMidGanks": 3,
+      "avgBotGanks": 2,
+      "objectives": {
+        "firstDragonRate": 0,
+        "soloDragonRate": 0,
+        "avgDragons": 1,
+        "avgFirstDragonTime": 814.047,
+        "avgVoidgrubs": 3,
+        "avgFirstVoidgrubTime": 543.501,
+        "avgHeralds": 0,
+        "avgFirstHeraldTime": null,
+        "avgBarons": 1,
+        "avgFirstBaronTime": 1509.435
+      },
+      "firstClearCamp": {
+        "blue": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 1
+        },
+        "red": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "redInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueGames": 1,
+        "redGames": 0
+      },
+      "earlyGank": {
+        "level3GankRate": 0,
+        "level3GankCount": 0,
+        "level3KillPositions": [],
+        "level4GankRate": 1,
+        "level4GankCount": 1,
+        "level4KillPositions": [
+          {
+            "x": 1417,
+            "y": 10652,
+            "lane": "top"
+          }
+        ],
+        "byTeam": {
+          "blueGames": 1,
+          "redGames": 0,
+          "blueLevel3GankRate": 0,
+          "blueLevel3GankCount": 0,
+          "blueLevel3KillPositions": [],
+          "blueLevel4GankRate": 1,
+          "blueLevel4GankCount": 1,
+          "blueLevel4KillPositions": [
+            {
+              "x": 1417,
+              "y": 10652,
+              "lane": "top"
+            }
+          ],
+          "redLevel3GankRate": 0,
+          "redLevel3GankCount": 0,
+          "redLevel3KillPositions": [],
+          "redLevel4GankRate": 0,
+          "redLevel4GankCount": 0,
+          "redLevel4KillPositions": []
+        }
+      },
+      "gankPositions": [
+        {
+          "x": 1417,
+          "y": 10652,
+          "lane": "top"
+        },
+        {
+          "x": 13751,
+          "y": 3152,
+          "lane": "bot"
+        },
+        {
+          "x": 1444,
+          "y": 11767,
+          "lane": "top"
+        },
+        {
+          "x": 2405,
+          "y": 12236,
+          "lane": "top"
+        },
+        {
+          "x": 3388,
+          "y": 10971,
+          "lane": "top"
+        },
+        {
+          "x": 8574,
+          "y": 7287,
+          "lane": "mid"
+        },
+        {
+          "x": 7534,
+          "y": 8649,
+          "lane": "mid"
+        },
+        {
+          "x": 14009,
+          "y": 4528,
+          "lane": "bot"
+        },
+        {
+          "x": 11476,
+          "y": 7682,
+          "lane": "mid"
+        }
+      ],
+      "minutePositions": [
+        {
+          "x": 6889,
+          "y": 5057,
+          "lane": "mid",
+          "minute": 1
+        },
+        {
+          "x": 6979,
+          "y": 3962,
+          "lane": "mid",
+          "minute": 2
+        },
+        {
+          "x": 4893,
+          "y": 9139,
+          "lane": "top",
+          "minute": 3
+        },
+        {
+          "x": 3170,
+          "y": 7919,
+          "lane": "top",
+          "minute": 4
+        },
+        {
+          "x": 7016,
+          "y": 4806,
+          "lane": "mid",
+          "minute": 5
+        },
+        {
+          "x": 7528,
+          "y": 2409,
+          "lane": "bot",
+          "minute": 6
+        },
+        {
+          "x": 7124,
+          "y": 9351,
+          "lane": "mid",
+          "minute": 7
+        },
+        {
+          "x": 6995,
+          "y": 5288,
+          "lane": "mid",
+          "minute": 8
+        },
+        {
+          "x": 4848,
+          "y": 10262,
+          "lane": "top",
+          "minute": 9
+        },
+        {
+          "x": 3133,
+          "y": 7657,
+          "lane": "top",
+          "minute": 10
+        },
+        {
+          "x": 8544,
+          "y": 6954,
+          "lane": "mid",
+          "minute": 11
+        },
+        {
+          "x": 9058,
+          "y": 3972,
+          "lane": "bot",
+          "minute": 12
+        },
+        {
+          "x": 10593,
+          "y": 6307,
+          "lane": "bot",
+          "minute": 13
+        },
+        {
+          "x": 7513,
+          "y": 5116,
+          "lane": "mid",
+          "minute": 14
+        }
+      ]
+    }
+  },
+  {
+    "queue": "q_420",
+    "puuid": "00000000-0000-4000-8000-00000000003d",
+    "jungle": {
+      "gamesAnalyzed": 1,
+      "topZoneWeightSum": 10,
+      "midZoneWeightSum": 4,
+      "botZoneWeightSum": 15,
+      "totalZoneWeightSum": 29,
+      "avgTopZonePercentage": 0.3448275862068966,
+      "avgMidZonePercentage": 0.13793103448275862,
+      "avgBotZonePercentage": 0.5172413793103449,
+      "totalTopGanks": 0,
+      "totalMidGanks": 0,
+      "totalBotGanks": 2,
+      "avgTopGanks": 0,
+      "avgMidGanks": 0,
+      "avgBotGanks": 2,
+      "objectives": {
+        "firstDragonRate": 1,
+        "soloDragonRate": 0,
+        "avgDragons": 3,
+        "avgFirstDragonTime": 384.01,
+        "avgVoidgrubs": 0,
+        "avgFirstVoidgrubTime": null,
+        "avgHeralds": 1,
+        "avgFirstHeraldTime": 1185.182,
+        "avgBarons": 0,
+        "avgFirstBaronTime": null
+      },
+      "firstClearCamp": {
+        "blue": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "red": {
+          "red": 1,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "redInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueGames": 0,
+        "redGames": 1
+      },
+      "earlyGank": {
+        "level3GankRate": 0,
+        "level3GankCount": 0,
+        "level3KillPositions": [],
+        "level4GankRate": 1,
+        "level4GankCount": 1,
+        "level4KillPositions": [
+          {
+            "x": 11726,
+            "y": 2115,
+            "lane": "bot"
+          },
+          {
+            "x": 12167,
+            "y": 2165,
+            "lane": "bot"
+          }
+        ],
+        "byTeam": {
+          "blueGames": 0,
+          "redGames": 1,
+          "blueLevel3GankRate": 0,
+          "blueLevel3GankCount": 0,
+          "blueLevel3KillPositions": [],
+          "blueLevel4GankRate": 0,
+          "blueLevel4GankCount": 0,
+          "blueLevel4KillPositions": [],
+          "redLevel3GankRate": 0,
+          "redLevel3GankCount": 0,
+          "redLevel3KillPositions": [],
+          "redLevel4GankRate": 1,
+          "redLevel4GankCount": 1,
+          "redLevel4KillPositions": [
+            {
+              "x": 11726,
+              "y": 2115,
+              "lane": "bot"
+            },
+            {
+              "x": 12167,
+              "y": 2165,
+              "lane": "bot"
+            }
+          ]
+        }
+      },
+      "gankPositions": [
+        {
+          "x": 11726,
+          "y": 2115,
+          "lane": "bot"
+        },
+        {
+          "x": 12167,
+          "y": 2165,
+          "lane": "bot"
+        }
+      ],
+      "minutePositions": [
+        {
+          "x": 6954,
+          "y": 11340,
+          "lane": "top",
+          "minute": 1
+        },
+        {
+          "x": 7901,
+          "y": 9703,
+          "lane": "mid",
+          "minute": 2
+        },
+        {
+          "x": 10653,
+          "y": 5426,
+          "lane": "bot",
+          "minute": 3
+        },
+        {
+          "x": 12283,
+          "y": 6639,
+          "lane": "bot",
+          "minute": 4
+        },
+        {
+          "x": 7889,
+          "y": 13263,
+          "lane": "top",
+          "minute": 5
+        },
+        {
+          "x": 8598,
+          "y": 6853,
+          "lane": "mid",
+          "minute": 6
+        },
+        {
+          "x": 11496,
+          "y": 3830,
+          "lane": "bot",
+          "minute": 7
+        },
+        {
+          "x": 7804,
+          "y": 9737,
+          "lane": "mid",
+          "minute": 8
+        },
+        {
+          "x": 6223,
+          "y": 11035,
+          "lane": "top",
+          "minute": 9
+        },
+        {
+          "x": 3112,
+          "y": 7690,
+          "lane": "top",
+          "minute": 10
+        },
+        {
+          "x": 8576,
+          "y": 7299,
+          "lane": "mid",
+          "minute": 11
+        },
+        {
+          "x": 10904,
+          "y": 4966,
+          "lane": "bot",
+          "minute": 12
+        },
+        {
+          "x": 11215,
+          "y": 6463,
+          "lane": "bot",
+          "minute": 13
+        },
+        {
+          "x": 7381,
+          "y": 11163,
+          "lane": "top",
+          "minute": 14
+        }
+      ]
+    }
+  },
+  {
+    "queue": "q_440",
+    "puuid": "00000000-0000-4000-8000-000000000028",
+    "jungle": {
+      "gamesAnalyzed": 1,
+      "topZoneWeightSum": 7,
+      "midZoneWeightSum": 12,
+      "botZoneWeightSum": 10,
+      "totalZoneWeightSum": 29,
+      "avgTopZonePercentage": 0.2413793103448276,
+      "avgMidZonePercentage": 0.41379310344827586,
+      "avgBotZonePercentage": 0.3448275862068966,
+      "totalTopGanks": 0,
+      "totalMidGanks": 2,
+      "totalBotGanks": 0,
+      "avgTopGanks": 0,
+      "avgMidGanks": 2,
+      "avgBotGanks": 0,
+      "objectives": {
+        "firstDragonRate": 0,
+        "soloDragonRate": 0,
+        "avgDragons": 1,
+        "avgFirstDragonTime": 1055.514,
+        "avgVoidgrubs": 3,
+        "avgFirstVoidgrubTime": 549.941,
+        "avgHeralds": 0,
+        "avgFirstHeraldTime": null,
+        "avgBarons": 0,
+        "avgFirstBaronTime": null
+      },
+      "firstClearCamp": {
+        "blue": {
+          "red": 1,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "red": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "redInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueGames": 1,
+        "redGames": 0
+      },
+      "earlyGank": {
+        "level3GankRate": 0,
+        "level3GankCount": 0,
+        "level3KillPositions": [],
+        "level4GankRate": 1,
+        "level4GankCount": 1,
+        "level4KillPositions": [
+          {
+            "x": 3704,
+            "y": 8288,
+            "lane": "top"
+          }
+        ],
+        "byTeam": {
+          "blueGames": 1,
+          "redGames": 0,
+          "blueLevel3GankRate": 0,
+          "blueLevel3GankCount": 0,
+          "blueLevel3KillPositions": [],
+          "blueLevel4GankRate": 1,
+          "blueLevel4GankCount": 1,
+          "blueLevel4KillPositions": [
+            {
+              "x": 3704,
+              "y": 8288,
+              "lane": "top"
+            }
+          ],
+          "redLevel3GankRate": 0,
+          "redLevel3GankCount": 0,
+          "redLevel3KillPositions": [],
+          "redLevel4GankRate": 0,
+          "redLevel4GankCount": 0,
+          "redLevel4KillPositions": []
+        }
+      },
+      "gankPositions": [
+        {
+          "x": 4643,
+          "y": 6719,
+          "lane": "mid"
+        },
+        {
+          "x": 9368,
+          "y": 5800,
+          "lane": "mid"
+        }
+      ],
+      "minutePositions": [
+        {
+          "x": 7628,
+          "y": 3892,
+          "lane": "bot",
+          "minute": 1
+        },
+        {
+          "x": 6976,
+          "y": 5211,
+          "lane": "mid",
+          "minute": 2
+        },
+        {
+          "x": 4618,
+          "y": 8086,
+          "lane": "mid",
+          "minute": 3
+        },
+        {
+          "x": 5542,
+          "y": 1144,
+          "lane": "bot",
+          "minute": 4
+        },
+        {
+          "x": 8337,
+          "y": 5604,
+          "lane": "mid",
+          "minute": 5
+        },
+        {
+          "x": 394,
+          "y": 461,
+          "lane": "mid",
+          "minute": 6
+        },
+        {
+          "x": 7205,
+          "y": 3945,
+          "lane": "mid",
+          "minute": 7
+        },
+        {
+          "x": 394,
+          "y": 461,
+          "lane": "mid",
+          "minute": 8
+        },
+        {
+          "x": 4691,
+          "y": 10077,
+          "lane": "top",
+          "minute": 9
+        },
+        {
+          "x": 3969,
+          "y": 7684,
+          "lane": "top",
+          "minute": 10
+        },
+        {
+          "x": 9713,
+          "y": 5255,
+          "lane": "bot",
+          "minute": 11
+        },
+        {
+          "x": 7752,
+          "y": 3802,
+          "lane": "bot",
+          "minute": 12
+        },
+        {
+          "x": 12213,
+          "y": 1919,
+          "lane": "bot",
+          "minute": 13
+        },
+        {
+          "x": 6323,
+          "y": 6300,
+          "lane": "mid",
+          "minute": 14
+        }
+      ]
+    }
+  },
+  {
+    "queue": "q_440",
+    "puuid": "00000000-0000-4000-8000-000000000002",
+    "jungle": {
+      "gamesAnalyzed": 1,
+      "topZoneWeightSum": 7,
+      "midZoneWeightSum": 37,
+      "botZoneWeightSum": 20,
+      "totalZoneWeightSum": 64,
+      "avgTopZonePercentage": 0.109375,
+      "avgMidZonePercentage": 0.578125,
+      "avgBotZonePercentage": 0.3125,
+      "totalTopGanks": 0,
+      "totalMidGanks": 7,
+      "totalBotGanks": 2,
+      "avgTopGanks": 0,
+      "avgMidGanks": 7,
+      "avgBotGanks": 2,
+      "objectives": {
+        "firstDragonRate": 1,
+        "soloDragonRate": 0,
+        "avgDragons": 3,
+        "avgFirstDragonTime": 674.015,
+        "avgVoidgrubs": 0,
+        "avgFirstVoidgrubTime": null,
+        "avgHeralds": 1,
+        "avgFirstHeraldTime": 981.073,
+        "avgBarons": 1,
+        "avgFirstBaronTime": 1245.817
+      },
+      "firstClearCamp": {
+        "blue": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "red": {
+          "red": 0,
+          "blue": 1,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "redInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueGames": 0,
+        "redGames": 1
+      },
+      "earlyGank": {
+        "level3GankRate": 0,
+        "level3GankCount": 0,
+        "level3KillPositions": [],
+        "level4GankRate": 0,
+        "level4GankCount": 0,
+        "level4KillPositions": [],
+        "byTeam": {
+          "blueGames": 0,
+          "redGames": 1,
+          "blueLevel3GankRate": 0,
+          "blueLevel3GankCount": 0,
+          "blueLevel3KillPositions": [],
+          "blueLevel4GankRate": 0,
+          "blueLevel4GankCount": 0,
+          "blueLevel4KillPositions": [],
+          "redLevel3GankRate": 0,
+          "redLevel3GankCount": 0,
+          "redLevel3KillPositions": [],
+          "redLevel4GankRate": 0,
+          "redLevel4GankCount": 0,
+          "redLevel4KillPositions": []
+        }
+      },
+      "gankPositions": [
+        {
+          "x": 6903,
+          "y": 7074,
+          "lane": "mid"
+        },
+        {
+          "x": 11472,
+          "y": 1908,
+          "lane": "bot"
+        },
+        {
+          "x": 5666,
+          "y": 6825,
+          "lane": "mid"
+        },
+        {
+          "x": 5821,
+          "y": 6689,
+          "lane": "mid"
+        },
+        {
+          "x": 3969,
+          "y": 7684,
+          "lane": "mid"
+        },
+        {
+          "x": 13405,
+          "y": 2813,
+          "lane": "bot"
+        },
+        {
+          "x": 8687,
+          "y": 5373,
+          "lane": "mid"
+        },
+        {
+          "x": 6798,
+          "y": 7038,
+          "lane": "mid"
+        },
+        {
+          "x": 10290,
+          "y": 8030,
+          "lane": "mid"
+        }
+      ],
+      "minutePositions": [
+        {
+          "x": 11547,
+          "y": 7036,
+          "lane": "bot",
+          "minute": 1
+        },
+        {
+          "x": 8758,
+          "y": 9864,
+          "lane": "mid",
+          "minute": 2
+        },
+        {
+          "x": 3638,
+          "y": 8280,
+          "lane": "top",
+          "minute": 3
+        },
+        {
+          "x": 9900,
+          "y": 6572,
+          "lane": "mid",
+          "minute": 4
+        },
+        {
+          "x": 12361,
+          "y": 6582,
+          "lane": "bot",
+          "minute": 5
+        },
+        {
+          "x": 11994,
+          "y": 4809,
+          "lane": "bot",
+          "minute": 6
+        },
+        {
+          "x": 6932,
+          "y": 6858,
+          "lane": "mid",
+          "minute": 7
+        },
+        {
+          "x": 10275,
+          "y": 12254,
+          "lane": "mid",
+          "minute": 8
+        },
+        {
+          "x": 6890,
+          "y": 7520,
+          "lane": "mid",
+          "minute": 9
+        },
+        {
+          "x": 2239,
+          "y": 9519,
+          "lane": "top",
+          "minute": 10
+        },
+        {
+          "x": 9368,
+          "y": 5800,
+          "lane": "bot",
+          "minute": 11
+        },
+        {
+          "x": 9510,
+          "y": 6201,
+          "lane": "mid",
+          "minute": 12
+        },
+        {
+          "x": 11979,
+          "y": 2991,
+          "lane": "bot",
+          "minute": 13
+        },
+        {
+          "x": 11612,
+          "y": 12882,
+          "lane": "mid",
+          "minute": 14
+        }
+      ]
+    }
+  },
+  {
+    "queue": "q_430",
+    "puuid": "00000000-0000-4000-8000-000000000025",
+    "jungle": {
+      "gamesAnalyzed": 1,
+      "topZoneWeightSum": 14,
+      "midZoneWeightSum": 11,
+      "botZoneWeightSum": 14,
+      "totalZoneWeightSum": 39,
+      "avgTopZonePercentage": 0.358974358974359,
+      "avgMidZonePercentage": 0.28205128205128205,
+      "avgBotZonePercentage": 0.358974358974359,
+      "totalTopGanks": 1,
+      "totalMidGanks": 1,
+      "totalBotGanks": 1,
+      "avgTopGanks": 1,
+      "avgMidGanks": 1,
+      "avgBotGanks": 1,
+      "objectives": {
+        "firstDragonRate": 0,
+        "soloDragonRate": 0,
+        "avgDragons": 0,
+        "avgFirstDragonTime": null,
+        "avgVoidgrubs": 0,
+        "avgFirstVoidgrubTime": null,
+        "avgHeralds": 0,
+        "avgFirstHeraldTime": null,
+        "avgBarons": 0,
+        "avgFirstBaronTime": null
+      },
+      "firstClearCamp": {
+        "blue": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "red": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueInvade": {
+          "red": 0,
+          "blue": 1,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "redInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueGames": 1,
+        "redGames": 0
+      },
+      "earlyGank": {
+        "level3GankRate": 0,
+        "level3GankCount": 0,
+        "level3KillPositions": [
+          {
+            "x": 8794,
+            "y": 3761,
+            "lane": "bot"
+          }
+        ],
+        "level4GankRate": 0,
+        "level4GankCount": 0,
+        "level4KillPositions": [],
+        "byTeam": {
+          "blueGames": 1,
+          "redGames": 0,
+          "blueLevel3GankRate": 0,
+          "blueLevel3GankCount": 0,
+          "blueLevel3KillPositions": [
+            {
+              "x": 8794,
+              "y": 3761,
+              "lane": "bot"
+            }
+          ],
+          "blueLevel4GankRate": 0,
+          "blueLevel4GankCount": 0,
+          "blueLevel4KillPositions": [],
+          "redLevel3GankRate": 0,
+          "redLevel3GankCount": 0,
+          "redLevel3KillPositions": [],
+          "redLevel4GankRate": 0,
+          "redLevel4GankCount": 0,
+          "redLevel4KillPositions": []
+        }
+      },
+      "gankPositions": [
+        {
+          "x": 11708,
+          "y": 1697,
+          "lane": "bot"
+        },
+        {
+          "x": 4368,
+          "y": 14028,
+          "lane": "top"
+        },
+        {
+          "x": 8360,
+          "y": 8706,
+          "lane": "mid"
+        }
+      ],
+      "minutePositions": [
+        {
+          "x": 11176,
+          "y": 6665,
+          "lane": "bot",
+          "minute": 1
+        },
+        {
+          "x": 12304,
+          "y": 5590,
+          "lane": "bot",
+          "minute": 2
+        },
+        {
+          "x": 8168,
+          "y": 5172,
+          "lane": "mid",
+          "minute": 3
+        },
+        {
+          "x": 2993,
+          "y": 8248,
+          "lane": "top",
+          "minute": 4
+        },
+        {
+          "x": 7157,
+          "y": 5222,
+          "lane": "mid",
+          "minute": 5
+        },
+        {
+          "x": 5181,
+          "y": 8156,
+          "lane": "mid",
+          "minute": 6
+        },
+        {
+          "x": 4070,
+          "y": 11711,
+          "lane": "top",
+          "minute": 7
+        },
+        {
+          "x": 7990,
+          "y": 2338,
+          "lane": "bot",
+          "minute": 8
+        },
+        {
+          "x": 12572,
+          "y": 5670,
+          "lane": "bot",
+          "minute": 9
+        },
+        {
+          "x": 3114,
+          "y": 7988,
+          "lane": "top",
+          "minute": 10
+        },
+        {
+          "x": 794,
+          "y": 658,
+          "lane": "mid",
+          "minute": 11
+        },
+        {
+          "x": 6077,
+          "y": 12342,
+          "lane": "top",
+          "minute": 12
+        },
+        {
+          "x": 394,
+          "y": 461,
+          "lane": "mid",
+          "minute": 13
+        },
+        {
+          "x": 7196,
+          "y": 4704,
+          "lane": "mid",
+          "minute": 14
+        }
+      ]
+    }
+  },
+  {
+    "queue": "q_430",
+    "puuid": "00000000-0000-4000-8000-000000000062",
+    "jungle": {
+      "gamesAnalyzed": 1,
+      "topZoneWeightSum": 2,
+      "midZoneWeightSum": 14,
+      "botZoneWeightSum": 3,
+      "totalZoneWeightSum": 19,
+      "avgTopZonePercentage": 0.10526315789473684,
+      "avgMidZonePercentage": 0.7368421052631579,
+      "avgBotZonePercentage": 0.15789473684210525,
+      "totalTopGanks": 0,
+      "totalMidGanks": 1,
+      "totalBotGanks": 0,
+      "avgTopGanks": 0,
+      "avgMidGanks": 1,
+      "avgBotGanks": 0,
+      "objectives": {
+        "firstDragonRate": 1,
+        "soloDragonRate": 0.5,
+        "avgDragons": 2,
+        "avgFirstDragonTime": 341.328,
+        "avgVoidgrubs": 3,
+        "avgFirstVoidgrubTime": 520.296,
+        "avgHeralds": 0,
+        "avgFirstHeraldTime": null,
+        "avgBarons": 0,
+        "avgFirstBaronTime": null
+      },
+      "firstClearCamp": {
+        "blue": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "red": {
+          "red": 1,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "redInvade": {
+          "red": 0,
+          "blue": 0,
+          "wolves": 0,
+          "raptors": 0
+        },
+        "blueGames": 0,
+        "redGames": 1
+      },
+      "earlyGank": {
+        "level3GankRate": 0,
+        "level3GankCount": 0,
+        "level3KillPositions": [],
+        "level4GankRate": 0,
+        "level4GankCount": 0,
+        "level4KillPositions": [],
+        "byTeam": {
+          "blueGames": 0,
+          "redGames": 1,
+          "blueLevel3GankRate": 0,
+          "blueLevel3GankCount": 0,
+          "blueLevel3KillPositions": [],
+          "blueLevel4GankRate": 0,
+          "blueLevel4GankCount": 0,
+          "blueLevel4KillPositions": [],
+          "redLevel3GankRate": 0,
+          "redLevel3GankCount": 0,
+          "redLevel3KillPositions": [],
+          "redLevel4GankRate": 0,
+          "redLevel4GankCount": 0,
+          "redLevel4KillPositions": []
+        }
+      },
+      "gankPositions": [
+        {
+          "x": 8240,
+          "y": 6483,
+          "lane": "mid"
+        }
+      ],
+      "minutePositions": [
+        {
+          "x": 7423,
+          "y": 11289,
+          "lane": "top",
+          "minute": 1
+        },
+        {
+          "x": 11536,
+          "y": 7833,
+          "lane": "bot",
+          "minute": 2
+        },
+        {
+          "x": 12162,
+          "y": 12558,
+          "lane": "mid",
+          "minute": 3
+        },
+        {
+          "x": 14241,
+          "y": 14114,
+          "lane": "mid",
+          "minute": 4
+        },
+        {
+          "x": 12141,
+          "y": 6519,
+          "lane": "bot",
+          "minute": 5
+        },
+        {
+          "x": 8033,
+          "y": 10151,
+          "lane": "mid",
+          "minute": 6
+        },
+        {
+          "x": 11207,
+          "y": 8511,
+          "lane": "mid",
+          "minute": 7
+        },
+        {
+          "x": 14326,
+          "y": 14377,
+          "lane": "mid",
+          "minute": 8
+        },
+        {
+          "x": 4799,
+          "y": 10249,
+          "lane": "top",
+          "minute": 9
+        },
+        {
+          "x": 7987,
+          "y": 9780,
+          "lane": "mid",
+          "minute": 10
+        },
+        {
+          "x": 9907,
+          "y": 4691,
+          "lane": "bot",
+          "minute": 11
+        },
+        {
+          "x": 8861,
+          "y": 9744,
+          "lane": "mid",
+          "minute": 12
+        },
+        {
+          "x": 7325,
+          "y": 9788,
+          "lane": "mid",
+          "minute": 13
+        },
+        {
+          "x": 13698,
+          "y": 13259,
+          "lane": "mid",
+          "minute": 14
+        }
+      ]
+    }
+  }
+]

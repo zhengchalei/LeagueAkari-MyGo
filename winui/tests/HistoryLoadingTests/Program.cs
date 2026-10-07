@@ -1,0 +1,130 @@
+using System.Text.Json;
+using LeagueAkari.WinUI.Services;
+
+int passed = 0;
+void Check(bool value, string contract) { if (!value) throw new Exception(contract); passed++; Console.WriteLine("PASS " + contract); }
+JsonElement Game(long id, bool win = true) => JsonSerializer.SerializeToElement(new { gameId = id, win });
+HistoryBatch Batch(params long[] ids) => new(ids.Select(id => Game(id)).ToArray(), ids.Length);
+HistoryQuery Q(string player = "self", int page = 0, int count = 20, string server = "HN1", string source = "sgp", string queue = "<akari:all>") => new(player, server, source, page, count, queue);
+var requests = new List<(HistoryQuery Query, int Start, int Count, TaskCompletionSource<HistoryBatch> Result)>();
+var prepares = new List<(HistoryQuery Query, TaskCompletionSource<string> Result)>();
+bool deferPrepare = false;
+Task<string> Prepare(HistoryQuery query, CancellationToken token)
+{
+    if (!deferPrepare) return Task.FromResult(query.Puuid + ":" + query.Server + ":" + query.PreferredSource);
+    var result = new TaskCompletionSource<string>(); prepares.Add((query, result)); return result.Task;
+}
+Task<HistoryBatch> Read(string data, HistoryQuery query, int start, int count, CancellationToken token)
+{
+    var result = new TaskCompletionSource<HistoryBatch>(); requests.Add((query, start, count, result)); return result.Task;
+}
+var history = new HistoryLoadController<string>(Prepare, Read); history.Activate();
+var first = history.LoadAsync(Q());
+Check(history.Busy && history.Page is null && !history.CanNext && !history.CanPrevious, "Initial load is busy without speculative page number");
+requests[^1].Result.SetResult(Batch(1, 2)); await first;
+Check(history.Page?.Query.Page == 0 && history.Page.Games.Length == 2 && history.CanNext && !history.CanPrevious, "Short first page stays navigable as original next-page control");
+var pageTwo = history.LoadAsync(Q(page: 1));
+Check(history.Page!.Query.Page == 0 && !history.CanNext && !history.CanPrevious, "Pending next page retains committed page and disables paging");
+Check(requests[^1].Start == 20 && requests[^1].Count == 20, "Next page uses committed zero-based offset");
+requests[^1].Result.SetException(new IOException("page two failed")); await pageTwo;
+Check(history.Page.Query.Page == 0 && history.Page.Games.Select(g => g.Number("gameId")).SequenceEqual([1d, 2d]), "Failed page preserves old content and successful page number");
+Check(history.Error?.Message == "page two failed" && history.CanRetry && !history.Busy && history.CanNext, "Failure is retained and retry/paging are available");
+var retry = history.RetryAsync(); Check(requests[^1].Query.Page == 1 && history.Busy && history.Error is null, "Explicit retry repeats failed query rather than current visible page");
+requests[^1].Result.SetResult(Batch(21)); await retry;
+Check(history.Page!.Query.Page == 1 && history.CanPrevious && history.Error is null, "Successful retry commits new page once");
+var empty = history.LoadAsync(Q(page: 2)); requests[^1].Result.SetResult(Batch()); await empty;
+Check(history.Page.Query.Page == 2 && history.Page.Games.Length == 0 && history.CanNext, "Successful empty page has its own page number and may continue searching");
+var countChange = history.LoadAsync(Q(count: 50)); requests[^1].Result.SetException(new IOException("new size failed")); await countChange;
+Check(history.Page.Query.Count == 20 && history.Page.Query.Page == 2, "Failed page-size change retains committed size and page");
+
+var old = history.LoadAsync(Q(player: "old")); var oldRequest = requests[^1];
+var newer = history.LoadAsync(Q(player: "new")); var newRequest = requests[^1];
+newRequest.Result.SetResult(Batch(100)); await newer;
+oldRequest.Result.SetResult(Batch(200)); await old;
+Check(history.Page.Query.Puuid == "new" && history.Page.Games.Single().Number("gameId") == 100, "Late response from another player cannot overwrite new player data");
+Check(history.Page.Data.StartsWith("new:"), "Metadata and matches commit under the same player identity");
+var oldServer = history.LoadAsync(Q(player: "new", server: "HN1")); var serverRequest = requests[^1];
+var newServer = history.LoadAsync(Q(player: "new", server: "HN2", source: "lcu")); var sourceRequest = requests[^1];
+sourceRequest.Result.SetResult(Batch(300)); await newServer;
+serverRequest.Result.SetException(new IOException("old server failed")); await oldServer;
+Check(history.Page.Query.Server == "HN2" && history.Page.Query.PreferredSource == "lcu" && history.Error is null, "Late old server failure cannot replace new source success");
+var oldQueue = history.LoadAsync(Q(queue: "ranked")); var queueRequest = requests[^1];
+var newQueue = history.LoadAsync(Q(queue: "q_450")); requests[^1].Result.SetResult(Batch(450)); await newQueue;
+queueRequest.Result.SetResult(Batch(420)); await oldQueue;
+Check(history.Page.Query.Queue == "q_450" && history.Page.Games.Single().Number("gameId") == 450, "Queue switching ignores late queue result");
+var oldPage = history.LoadAsync(Q(page: 4, count: 20)); var oldPageRequest = requests[^1];
+var changedPage = history.LoadAsync(Q(page: 1, count: 50)); requests[^1].Result.SetResult(Batch(480)); await changedPage;
+oldPageRequest.Result.SetResult(Batch(481)); await oldPage;
+Check(history.Page.Query.Page == 1 && history.Page.Query.Count == 50 && history.Page.Games.Single().Number("gameId") == 480, "Late page-number and page-size response cannot overwrite newest parameters");
+
+deferPrepare = true;
+var oldPreparation = history.LoadAsync(Q(player: "preparing-old")); var oldPrepare = prepares[^1];
+var newPreparation = history.LoadAsync(Q(player: "preparing-new")); prepares[^1].Result.SetResult("prepared-new");
+requests[^1].Result.SetResult(Batch(500)); await newPreparation;
+int readsBefore = requests.Count; oldPrepare.Result.SetResult("prepared-old"); await oldPreparation;
+Check(requests.Count == readsBefore && history.Page.Data == "prepared-new", "Canceled preparation cannot issue a later history request or commit profile");
+deferPrepare = false;
+int beforeDuplicate = requests.Count;
+var duplicateFirst = history.LoadAsync(Q(page: 3)); var duplicateSecond = history.LoadAsync(Q(page: 3));
+Check(ReferenceEquals(duplicateFirst, duplicateSecond) && requests.Count == beforeDuplicate + 1, "Identical concurrent refresh shares one request");
+var replacedSame = history.LoadAsync(Q(page: 3), force: true); var replacedRequest = requests[^1];
+requests[^2].Result.SetResult(Batch(600)); await duplicateFirst;
+Check(history.Busy, "Superseded finally cannot release busy state of a forced account refresh");
+replacedRequest.Result.SetResult(Batch(601)); await replacedSame;
+Check(history.Page.Games.Single().Number("gameId") == 601, "Forced same-query refresh owns the result");
+var canceled = history.LoadAsync(Q(page: 4)); var canceledRequest = requests[^1]; history.Cancel(); await canceled;
+Check(!history.Busy && history.Page.Query.Page == 3 && history.Error is null, "Cancel loading retains successful page without failure");
+canceledRequest.Result.SetResult(Batch(700)); await Task.Yield();
+Check(history.Page.Query.Page == 3, "Canceled network completion cannot mutate retained page");
+var unmounted = history.LoadAsync(Q(page: 4)); var unmountedRequest = requests[^1]; history.Deactivate(); await unmounted;
+history.Activate(); var reloaded = history.LoadAsync(Q(player: "reopened")); requests[^1].Result.SetResult(Batch(800)); await reloaded;
+unmountedRequest.Result.SetResult(Batch(900)); await Task.Yield();
+Check(history.Page.Query.Puuid == "reopened" && !history.Busy, "Unloaded response cannot overwrite reactivated page or its busy state");
+
+var options = new HistoryCollectOptions(3, 4, 5);
+var collection = history.CollectAsync(Q(player: "collector", page: 2), options, (_, game) => game.Boolean("win"));
+Check(history.Busy && history.Collecting && history.Page.Collection == HistoryCollectionStatus.Collecting && history.Page.Games.Length == 0, "Collection begins a distinct empty result page");
+Check(requests[^1].Start == 0 && requests[^1].Count == 3, "Collection starts scanning at zero independently of prior normal page");
+requests[^1].Result.SetResult(new([Game(1), Game(1), Game(2, false)], 3));
+Check(history.Page.Games.Length == 1 && history.Page.Scanned == 3 && requests[^1].Start == 3, "Within-batch duplicate IDs do not inflate count and full raw batch advances offset");
+requests[^1].Result.SetResult(new([Game(1), Game(3)], 2));
+Check(history.Page.Games.Length == 2 && history.Page.Scanned == 5 && requests[^1].Start == 6, "Short collection batch continues and overlaps deduplicate globally");
+requests[^1].Result.SetResult(new([], 3));
+Check(history.Page.Scanned == 8 && requests[^1].Start == 9, "Malformed filtered-out summary rows still count as raw scanned data");
+requests[^1].Result.SetResult(new([Game(4), Game(5), Game(6)], 3)); await collection;
+Check(history.Page.Games.Length == 4 && history.Page.Collection == HistoryCollectionStatus.Completed && !history.Busy && !history.Collecting, "Target count truncates final batch and completes collection");
+Check(history.Page.Query.Page == 2 && !history.CanPrevious && !history.CanNext, "Collected result preserves original normal query while pagination is replaced");
+Check(history.Page.Query.Puuid == "collector" && history.Page.Data.StartsWith("collector:"), "Collection metadata and batches share captured player identity");
+
+var stopCollection = history.CollectAsync(Q(), new(2, 20, 5), (_, _) => true);
+requests[^1].Result.SetResult(Batch(11, 12)); var stoppedRead = requests[^1]; history.Cancel(); await stopCollection;
+Check(history.Page.Collection == HistoryCollectionStatus.Stopped && history.Page.Games.Length == 2 && history.Page.Scanned == 2, "Stopping collection retains accepted batches and scan progress");
+int stoppedCount = requests.Count; stoppedRead.Result.SetResult(Batch(13, 14)); await Task.Yield();
+Check(history.Page.Games.Length == 2 && requests.Count == stoppedCount, "Canceled in-flight batch does not append results or start next request");
+var failCollection = history.CollectAsync(Q(), new(2, 20, 5), (_, _) => true);
+requests[^1].Result.SetResult(Batch(21)); requests[^1].Result.SetException(new IOException("collector failed")); await failCollection;
+Check(history.Page.Collection == HistoryCollectionStatus.Failed && history.Page.Games.Length == 1 && history.Error?.Message == "collector failed" && history.CanRetry, "Collection error retains partial result and exact failure for retry");
+var retryCollection = history.RetryAsync(); Check(history.Collecting && requests[^1].Start == 0 && history.Page.Games.Length == 0, "Retry collection restarts from zero with captured parameters");
+requests[^1].Result.SetResult(Batch()); await retryCollection;
+Check(history.Page.Collection == HistoryCollectionStatus.Completed && history.Page.Scanned == 0, "Empty raw batch completes collection without an extra query");
+var limited = history.CollectAsync(Q(), new(2, 20, 1), (_, _) => true); requests[^1].Result.SetResult(Batch(31)); await limited;
+Check(history.Page.Iterations == 1 && history.Page.Games.Length == 1 && history.Page.Collection == HistoryCollectionStatus.Completed, "Iteration limit completes a partial collection");
+var collectedNormal = history.LoadAsync(history.Page.Query); requests[^1].Result.SetResult(Batch(41)); await collectedNormal;
+Check(history.Page.Collection is null && history.CanNext, "Reload normal page replaces collection state and restores paging");
+var identityCollection = history.CollectAsync(Q(player: "old-collector"), options, (_, _) => true); var identityRead = requests[^1];
+var identityLoad = history.LoadAsync(Q(player: "new-owner")); requests[^1].Result.SetResult(Batch(51)); await identityLoad;
+identityRead.Result.SetResult(Batch(52)); await identityCollection;
+Check(history.Page.Query.Puuid == "new-owner" && history.Page.Collection is null && history.Page.Games.Single().Number("gameId") == 51, "Changing identity cancels collection and ignores its late batch");
+deferPrepare = true;
+var failedPrepare = history.LoadAsync(Q(player: "missing")); prepares[^1].Result.SetException(new IOException("profile unavailable")); await failedPrepare;
+Check(history.Page.Query.Puuid == "new-owner" && history.Page.Games.Single().Number("gameId") == 51 && history.Error?.Message == "profile unavailable" && history.CanRetry, "Failed identity preparation preserves the whole prior player page and enables retry");
+var canceledPreparation = history.LoadAsync(Q(player: "cancel-profile")); var cancelPrepare = prepares[^1]; int beforeCanceledPrepare = requests.Count;
+history.Cancel(); await canceledPreparation; cancelPrepare.Result.SetResult("too late"); await Task.Yield();
+Check(requests.Count == beforeCanceledPrepare && history.Page.Query.Puuid == "new-owner" && !history.Busy, "Cancel during profile preparation never submits a later match query");
+deferPrepare = false;
+var collectingUnloaded = history.CollectAsync(Q(), options, (_, _) => true); var unloadedBatch = requests[^1]; history.Deactivate(); await collectingUnloaded;
+unloadedBatch.Result.SetResult(Batch(61)); await Task.Yield();
+Check(!history.Busy && !history.Collecting && history.Page.Collection == HistoryCollectionStatus.Stopped, "Unloading collection releases operation ownership and retains stopped result");
+int inactiveRequests = requests.Count; await history.LoadAsync(Q()); await history.RetryAsync(); await history.CollectAsync(Q(), options, (_, _) => true);
+Check(requests.Count == inactiveRequests, "Inactive page sends no new query, retry or collection requests");
+Console.WriteLine($"History loading: {passed} controllable async contracts passed; no League client calls");

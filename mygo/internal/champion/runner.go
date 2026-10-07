@@ -33,20 +33,22 @@ type selection struct {
 }
 
 type Runner struct {
-	client       JSONClient
-	settings     *settings.Store
-	emit         bridge.Emitter
-	tickMu       sync.Mutex
-	updateMu     sync.Mutex
-	mu           sync.Mutex
-	activeCancel context.CancelFunc
-	reset        bool
-	closed       bool
-	unsubscribe  func()
-	selectionKey string
-	runesKey     string
-	spellsKey    string
-	state        map[string]any
+	client          JSONClient
+	settings        *settings.Store
+	emit            bridge.Emitter
+	tickMu          sync.Mutex
+	updateMu        sync.Mutex
+	mu              sync.Mutex
+	activeCancel    context.CancelFunc
+	reset           bool
+	closed          bool
+	unsubscribe     func()
+	selectionKey    string
+	conversationKey string
+	connectionKey   string
+	runesKey        string
+	spellsKey       string
+	state           map[string]any
 }
 
 // New performs no client writes; Run or Tick starts the optional automation.
@@ -111,6 +113,13 @@ func (r *Runner) Tick(parent context.Context) error {
 	r.tickMu.Lock()
 	defer r.tickMu.Unlock()
 	ctx, cancel := context.WithCancel(parent)
+	if client, ok := r.client.(interface {
+		RequestScope(context.Context) (context.Context, context.CancelFunc)
+	}); ok {
+		var release context.CancelFunc
+		ctx, release = client.RequestScope(ctx)
+		defer release()
+	}
 	r.mu.Lock()
 	if r.closed {
 		r.mu.Unlock()
@@ -133,6 +142,17 @@ func (r *Runner) Tick(parent context.Context) error {
 	if err != nil {
 		return err
 	}
+	if client, ok := r.client.(gameplayClient); ok {
+		state, _ := client.GameplayState()["state"].(map[string]any)
+		auth, _ := json.Marshal(state["auth"])
+		if r.connectionKey != string(auth) {
+			r.mu.Lock()
+			r.clearSelection()
+			r.mu.Unlock()
+			r.conversationKey = ""
+			r.connectionKey = string(auth)
+		}
+	}
 	if !config.Enabled {
 		r.mu.Lock()
 		r.clearSelection()
@@ -147,6 +167,14 @@ func (r *Runner) Tick(parent context.Context) error {
 		return err
 	}
 	if self == nil {
+		r.conversationKey = ""
+		r.mu.Lock()
+		r.clearSelection()
+		r.mu.Unlock()
+		return nil
+	}
+	r.announce(ctx, *self, config)
+	if self.ChampionID == 0 {
 		r.mu.Lock()
 		r.clearSelection()
 		r.mu.Unlock()
@@ -171,36 +199,59 @@ func (r *Runner) Tick(parent context.Context) error {
 		r.state["spellsStatus"] = "idle"
 	}
 	r.mu.Unlock()
-	var failures []error
+	var pending sync.WaitGroup
+	failures := make(chan error, 2)
 	if runes != nil {
 		fingerprint, _ := json.Marshal(runes)
 		key := base + string(fingerprint)
 		if r.claim("runes", key) {
-			err := runes.validate()
-			if err == nil {
-				err = r.applyRunes(ctx, *self, runes)
-			}
-			r.finish("runes", err)
-			if err != nil {
-				failures = append(failures, err)
-			}
+			pending.Add(1)
+			go func() {
+				defer pending.Done()
+				err := runes.validate()
+				if err == nil {
+					err = r.applyRunes(ctx, *self, runes)
+				}
+				if errors.Is(err, errNoRunePages) {
+					r.mu.Lock()
+					r.state["runesStatus"] = "idle"
+					r.mu.Unlock()
+					return
+				}
+				r.finish("runes", err)
+				r.sendApplicationMessage(ctx, *self, "runes", runes, nil, err)
+				if err != nil {
+					failures <- err
+				}
+			}()
 		}
 	}
 	if spells != nil && ctx.Err() == nil {
 		fingerprint, _ := json.Marshal(spells)
 		key := base + string(fingerprint)
 		if r.claim("spells", key) {
-			err := spells.validate()
-			if err == nil {
-				err = r.write(ctx, *self, http.MethodPatch, "/lol-champ-select/v1/session/my-selection", spells)
-			}
-			r.finish("spells", err)
-			if err != nil {
-				failures = append(failures, err)
-			}
+			pending.Add(1)
+			go func() {
+				defer pending.Done()
+				err := spells.validate()
+				if err == nil {
+					err = r.write(ctx, *self, http.MethodPatch, "/lol-champ-select/v1/session/my-selection", spells)
+				}
+				r.finish("spells", err)
+				r.sendApplicationMessage(ctx, *self, "spells", nil, spells, err)
+				if err != nil {
+					failures <- err
+				}
+			}()
 		}
 	}
-	return errors.Join(failures...)
+	pending.Wait()
+	close(failures)
+	var errorsReceived []error
+	for err := range failures {
+		errorsReceived = append(errorsReceived, err)
+	}
+	return errors.Join(errorsReceived...)
 }
 
 func (r *Runner) clearSelection() {
@@ -241,7 +292,7 @@ func (r *Runner) finish(kind string, err error) {
 	}
 	r.mu.Unlock()
 	if err != nil && !errors.Is(err, context.Canceled) && r.emit != nil {
-		r.emit(Namespace, "error-"+kind+"-update", err.Error())
+		r.emit(Namespace, "error-"+kind+"-update", map[string]any{"message": err.Error()})
 	}
 }
 

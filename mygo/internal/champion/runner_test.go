@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"testing"
 )
 
@@ -14,6 +15,7 @@ type request struct {
 }
 
 type fakeClient struct {
+	mu         sync.Mutex
 	phase      string
 	hero       int
 	position   string
@@ -50,6 +52,8 @@ func mockClient() *fakeClient {
 }
 
 func (c *fakeClient) JSON(ctx context.Context, method, path string, body any) (any, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if c.before != nil {
 		c.before(ctx, method, path, body)
 	}
@@ -101,10 +105,14 @@ func TestRuneAndSpellApplicationDeduplicatesAndFollowsHeroChanges(t *testing.T) 
 			t.Fatal(err)
 		}
 	}
-	if len(client.writes) != 3 {
+	if len(client.writes) != 4 {
 		t.Fatalf("expected rune update, currentpage and spells exactly once, got %+v", client.writes)
 	}
-	if client.writes[0].path != "/lol-perks/v1/pages/77" || client.writes[1].body != 77 || client.writes[2].method != http.MethodPatch {
+	paths := map[string]bool{}
+	for _, write := range client.writes {
+		paths[write.method+" "+write.path] = true
+	}
+	if !paths["POST /lol-perks/v1/pages/"] || !paths["PUT /lol-perks/v1/pages/99"] || !paths["PUT /lol-perks/v1/currentpage"] || !paths["PATCH /lol-champ-select/v1/session/my-selection"] {
 		t.Fatalf("unexpected rune/spell endpoint contract: %+v", client.writes)
 	}
 	if runner.State()["runesStatus"] != "applied" || runner.State()["spellsStatus"] != "applied" {
@@ -114,7 +122,7 @@ func TestRuneAndSpellApplicationDeduplicatesAndFollowsHeroChanges(t *testing.T) 
 	if err := runner.Tick(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	if len(client.writes) != 6 {
+	if len(client.writes) != 8 {
 		t.Fatal("switched champion did not reapply both configurations")
 	}
 	client.phase = "Lobby"
@@ -126,7 +134,7 @@ func TestRuneAndSpellApplicationDeduplicatesAndFollowsHeroChanges(t *testing.T) 
 	if err := runner.Tick(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	if len(client.writes) != 9 {
+	if len(client.writes) != 12 {
 		t.Fatal("next champion select did not apply")
 	}
 }
@@ -154,8 +162,8 @@ func TestRunePageCreationAndFullInventoryReplacement(t *testing.T) {
 				if client.writes[0].body.(map[string]any)["primaryStyleId"] != "8200" {
 					t.Fatal("creation requires string primaryStyleId")
 				}
-			} else if len(client.writes) != 2 || client.writes[0].path != "/lol-perks/v1/pages/3" {
-				t.Fatalf("full inventory must use editable current page: %+v", client.writes)
+			} else if len(client.writes) != 2 || client.writes[0].path != "/lol-perks/v1/pages/1" {
+				t.Fatalf("original full inventory replaces the first returned page: %+v", client.writes)
 			}
 		})
 	}
@@ -287,7 +295,7 @@ func TestCachedClientStateUsesLiveWriteGuardAndChineseChampionName(t *testing.T)
 	if err := runner.Tick(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	if len(client.writes) != 2 || client.writes[0].body.(map[string]any)["name"] != "[LeagueAkari-MyGo] 阿狸 - 中路" {
+	if len(client.writes) != 3 || client.writes[0].body.(map[string]any)["name"] != "[Akari] 阿狸 - 中路" {
 		t.Fatalf("cached champion data not applied correctly: %+v", client.writes)
 	}
 	client.hero = 147

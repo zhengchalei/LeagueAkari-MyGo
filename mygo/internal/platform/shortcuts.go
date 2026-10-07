@@ -347,7 +347,7 @@ func (s *Service) applyShortcutSettings() {
 			kind = "stateful"
 		}
 		err := s.RegisterTarget(target, id, kind, func(details ShortcutDetails) {
-			if s.options.WindowAction == nil {
+			if s.options.WindowAction == nil || s.Setting(namespace, "enabled") != true {
 				return
 			}
 			if name == "ongoing-game-window" {

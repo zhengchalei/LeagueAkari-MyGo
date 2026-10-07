@@ -45,12 +45,23 @@ func reloadScopes(options map[string]any) ([]string, error) {
 }
 
 func (s *Service) ReloadPlayerWithOptions(ctx context.Context, puuid string, options map[string]any) error {
+	ctx, release := s.requestScope(ctx)
+	defer release()
 	if !validPUUID(puuid) {
 		return errors.New("puuid cannot be empty")
 	}
 	scopes, err := reloadScopes(options)
 	if err != nil {
 		return err
+	}
+	for _, scope := range scopes {
+		if scope == "matchHistory" {
+			config := s.config()
+			var finishPrefetch func()
+			ctx, finishPrefetch = s.startDetailsPrefetch(ctx, config.detailsCount, config.concurrency)
+			defer finishPrefetch()
+			break
+		}
 	}
 	err = s.loadScopes(ctx, puuid, scopes, true)
 	s.loadAuxiliaryInfo(ctx)
@@ -96,7 +107,12 @@ func (s *Service) loadMetadata(ctx context.Context, puuid, scope string, force b
 	s.loading(scope, puuid, "loading")
 	value, err := s.backend.JSON(ctx, http.MethodGet, paths[scope], nil)
 	if err != nil {
-		s.loading(scope, puuid, "error")
+		if ctx.Err() == nil {
+			s.loading(scope, puuid, "error")
+		}
+		return err
+	}
+	if err := ctx.Err(); err != nil {
 		return err
 	}
 	if scope == "championMastery" {

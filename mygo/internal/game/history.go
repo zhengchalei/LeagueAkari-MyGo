@@ -80,6 +80,7 @@ func compactHistory(data json.RawMessage, sgp bool) ([]summaryWrapper, error) {
 
 func (s *Service) history(ctx context.Context, puuid string, count int, query url.Values) (any, string, error) {
 	source := s.config().source
+	preferredSource, server := source, s.backend.CurrentServer()
 	sgp := "/match-history-query/v1/products/lol/player/" + url.PathEscape(puuid) + "/SUMMARY?" + query.Encode()
 	lcu := fmt.Sprintf("/lol-match-history/v1/products/lol/%s/matches?begIndex=0&endIndex=%d", url.PathEscape(puuid), count-1)
 	path := sgp
@@ -103,6 +104,12 @@ func (s *Service) history(ctx context.Context, puuid string, count int, query ur
 		return nil, source, err
 	}
 	games, err := compactHistory(encoded, source == "sgp")
+	if err == nil && source == "lcu" {
+		games, err = s.completeLCUHistory(ctx, games)
+	}
+	if err == nil && (s.backend.CurrentServer() != server || s.config().source != preferredSource) {
+		err = context.Canceled
+	}
 	return games, source, err
 }
 

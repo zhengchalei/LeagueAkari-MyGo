@@ -134,9 +134,33 @@ func (store *Store) Set(namespace, key string, value any) error {
 	if next[namespace] == nil {
 		next[namespace] = map[string]any{}
 	}
+	changedKeys := []string{key}
+	if namespace == "ongoing-game-main" {
+		currentCount, ok := next[namespace]["matchHistoryLoadCount"].(float64)
+		if !ok {
+			currentCount = 50
+		}
+		if key == "matchHistoryLoadCount" {
+			count, ok := normalized.(float64)
+			if !ok || count < 1 || count > 200 {
+				store.mu.Unlock()
+				return nil
+			}
+			if details, ok := next[namespace]["gameDetailsLoadCount"].(float64); ok && details > count {
+				next[namespace]["gameDetailsLoadCount"] = count
+				changedKeys = append(changedKeys, "gameDetailsLoadCount")
+			}
+		} else if key == "gameDetailsLoadCount" {
+			if details, ok := normalized.(float64); !ok || details < 0 || details > currentCount {
+				normalized = currentCount
+			}
+		}
+	}
 	next[namespace][key] = normalized
 	explicit := copyExplicit(store.explicit)
-	markPersisted(explicit, namespace, key)
+	for _, changedKey := range changedKeys {
+		markPersisted(explicit, namespace, changedKey)
+	}
 	if err := store.save(next, explicit); err != nil {
 		store.mu.Unlock()
 		return err
@@ -146,7 +170,9 @@ func (store *Store) Set(namespace, key string, value any) error {
 	listeners := store.copyListeners()
 	store.mu.Unlock()
 	for _, listener := range listeners {
-		listener(namespace, key)
+		for _, changedKey := range changedKeys {
+			listener(namespace, changedKey)
+		}
 	}
 	return nil
 }

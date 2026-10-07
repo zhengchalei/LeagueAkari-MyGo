@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/ui"
 	"github.com/zhengchalei/LeagueAkari-MyGo/mygo/internal/client"
 	"github.com/zhengchalei/LeagueAkari-MyGo/mygo/internal/settings"
 )
@@ -295,6 +296,14 @@ func (d *Desktop) ensureWindowOnMain(name string) *mygo.Window {
 	if !overlay {
 		options.Vibrancy = d.windowMaterial()
 	}
+	var mini *nativeMiniRuntime
+	if name == "aux-window" {
+		mini = d.newNativeMini()
+		options.Title = "LeagueAkari-MyGo · Mini"
+		options.URL, options.Page = "", mygo.PageOptions{}
+		options.Content = ui.View(mini.view.Draw)
+		options.Frameless = false
+	}
 	win := mygo.NewWindow(options)
 	if hasSavedBounds {
 		// MyGo treats X=Y=0 as "center"; SetBounds also restores that legitimate
@@ -309,8 +318,10 @@ func (d *Desktop) ensureWindowOnMain(name string) *mygo.Window {
 	if err := saveNormalWindowBounds(d.store, namespace, normalBounds); err != nil {
 		log.Printf("保存初始窗口布局失败: %v", err)
 	}
-	if err := suppressNativeCaption(win); err != nil {
-		log.Print(err)
+	if mini == nil {
+		if err := suppressNativeCaption(win); err != nil {
+			log.Print(err)
+		}
 	}
 	presentation := &windowPresentation{display: func(inactive bool) {
 		if win.IsDestroyed() {
@@ -331,6 +342,9 @@ func (d *Desktop) ensureWindowOnMain(name string) *mygo.Window {
 	windowPresentations.Store(win, presentation)
 	d.mu.Lock()
 	d.windows[name] = win
+	if mini != nil {
+		d.nativeMini = mini
+	}
 	d.mu.Unlock()
 	_ = win.SetIcon(trayIcon())
 	d.windowUpdate(namespace, "ready", false)
@@ -355,24 +369,46 @@ func (d *Desktop) ensureWindowOnMain(name string) *mygo.Window {
 			}
 		})
 	}
-	win.Page().OnDOMReady(func() {
+	if mini == nil {
+		win.Page().OnDOMReady(func() {
+			d.windowUpdate(namespace, "ready", true)
+			d.trackWindowBounds(namespace, win)
+		})
+		win.OnReadyToShow(presentation.pageReady)
+	} else {
+		mini.attach(win)
 		d.windowUpdate(namespace, "ready", true)
 		d.trackWindowBounds(namespace, win)
-	})
-	win.OnReadyToShow(presentation.pageReady)
+		presentation.pageReady()
+	}
 	win.OnClosed(func() {
+		if mini != nil {
+			mini.cancel()
+		}
 		presentation.cancel()
 		windowPresentations.Delete(win)
 		d.mu.Lock()
 		if d.windows[name] == win {
 			delete(d.windows, name)
+			if mini != nil {
+				d.nativeMini = nil
+			}
 		}
 		d.mu.Unlock()
 		d.windowUpdate(namespace, "show", false)
 		d.windowUpdate(namespace, "ready", false)
 	})
-	win.OnShow(func() { d.windowUpdate(namespace, "show", true) })
+	win.OnShow(func() {
+		if mini != nil {
+			mini.visible.Store(true)
+			mini.wake()
+		}
+		d.windowUpdate(namespace, "show", true)
+	})
 	win.OnHide(func() {
+		if mini != nil {
+			mini.visible.Store(false)
+		}
 		presentation.cancel()
 		d.windowUpdate(namespace, "show", false)
 		if overlay {
@@ -570,7 +606,9 @@ func (d *Desktop) windowCall(namespace, method string, args []any) (any, error) 
 		point := snapWindow(bounds, target, work, textArg(args, 0))
 		win.SetPosition(point.X, point.Y)
 	case "toggleDevtools":
-		win.Page().ToggleDevTools()
+		if page := win.Page(); page != nil {
+			page.ToggleDevTools()
+		}
 	case "setPinned":
 		value, _ := arg(args, 0).(bool)
 		if err := d.store.Set(namespace, "pinned", value); err != nil {

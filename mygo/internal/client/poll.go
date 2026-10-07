@@ -26,7 +26,14 @@ func (c *Client) Poll(ctx context.Context) {
 }
 
 func (c *Client) PollOnce(ctx context.Context) error {
+	parent := ctx
+	ctx, cancel := c.scopeConnection(ctx)
+	defer cancel()
 	c.mu.RLock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.RUnlock()
+		return context.Canceled
+	}
 	auth := c.auth
 	disabled := c.manualDisconnect || !c.autoConnect
 	c.mu.RUnlock()
@@ -39,10 +46,15 @@ func (c *Client) PollOnce(ctx context.Context) error {
 			return err
 		}
 		if found == nil {
-			c.disconnect()
+			c.disconnectForConnection(ctx, false)
 			return nil
 		}
-		c.SetAuth(found)
+		bound, release, err := c.discoveredConnection(ctx, parent, found)
+		if err != nil {
+			return err
+		}
+		defer release()
+		ctx = bound
 		auth = found
 	}
 	var me, loginQueue any
@@ -58,10 +70,14 @@ func (c *Client) PollOnce(ctx context.Context) error {
 		loginQueue, queueErr = c.JSON(ctx, http.MethodGet, "/lol-login/v1/login-queue-state", nil)
 	}()
 	initial.Wait()
+	if ctx.Err() != nil {
+		c.disconnectForConnection(ctx, false)
+		return ctx.Err()
+	}
 	if summonerErr != nil {
 		var status *StatusError
 		if !errors.As(summonerErr, &status) || status.Status == http.StatusUnauthorized || status.Status == http.StatusForbidden {
-			c.disconnect()
+			c.disconnectForConnection(ctx, false)
 			return summonerErr
 		}
 		// A summoner is unavailable during login/queueing. Confirm that the LCU
@@ -69,7 +85,7 @@ func (c *Client) PollOnce(ctx context.Context) error {
 		if queueErr != nil {
 			if _, loginErr := c.JSON(ctx, http.MethodGet, "/lol-login/v1/session", nil); loginErr != nil {
 				if _, phaseErr := c.JSON(ctx, http.MethodGet, "/lol-gameflow/v1/gameflow-phase", nil); phaseErr != nil {
-					c.disconnect()
+					c.disconnectForConnection(ctx, false)
 					return summonerErr
 				}
 			}
@@ -85,17 +101,23 @@ func (c *Client) PollOnce(ctx context.Context) error {
 			if login, err := c.JSON(ctx, http.MethodGet, "/lol-login/v1/session", nil); err == nil {
 				copied.PlatformID = String(Map(login)["platformId"])
 			}
-			c.SetAuth(&copied)
+			c.mu.Lock()
+			if !c.connectionCurrentLocked(ctx) {
+				c.mu.Unlock()
+				return context.Canceled
+			}
+			c.auth = &copied
+			c.mu.Unlock()
 			auth = &copied
 		}
 	}
-	c.set("state", "connectionState", "connected")
-	c.set("state", "auth", auth.Public())
-	c.set("summoner", "me", me)
+	c.setForConnection(ctx, "state", "connectionState", "connected")
+	c.setForConnection(ctx, "state", "auth", auth.Public())
+	c.setForConnection(ctx, "summoner", "me", me)
 	if queueErr == nil {
-		c.set("login", "loginQueueState", loginQueue)
+		c.setForConnection(ctx, "login", "loginQueueState", loginQueue)
 	} else {
-		c.set("login", "loginQueueState", nil)
+		c.setForConnection(ctx, "login", "loginQueueState", nil)
 	}
 	type endpoint struct{ state, key, path string }
 	endpoints := []endpoint{
@@ -107,7 +129,7 @@ func (c *Client) PollOnce(ctx context.Context) error {
 	if me != nil {
 		endpoints = append(endpoints, endpoint{"summoner", "profile", "/lol-summoner/v1/current-summoner/summoner-profile"})
 	} else {
-		c.set("summoner", "profile", nil)
+		c.setForConnection(ctx, "summoner", "profile", nil)
 	}
 	var wg sync.WaitGroup
 	for _, item := range endpoints {
@@ -119,9 +141,9 @@ func (c *Client) PollOnce(ctx context.Context) error {
 				value = nil
 			}
 			if item.state == "champSelect" && item.key == "session" {
-				c.setChampSelectSession(value)
+				c.setChampSelectSessionForConnection(ctx, value)
 			} else {
-				c.set(item.state, item.key, value)
+				c.setForConnection(ctx, item.state, item.key, value)
 			}
 		}(item)
 	}
@@ -138,20 +160,20 @@ func (c *Client) PollOnce(ctx context.Context) error {
 		if err != nil {
 			subset = nil
 		}
-		c.setSubsetChampionList(subset)
+		c.setSubsetChampionListForConnection(ctx, subset)
 		for _, item := range []endpoint{{"champSelect", "currentPickableChampionIds", "/lol-champ-select/v1/pickable-champion-ids"}, {"champSelect", "currentBannableChampionIds", "/lol-champ-select/v1/bannable-champion-ids"}, {"champSelect", "disabledChampionIds", "/lol-champ-select/v1/disabled-champion-ids"}, {"champSelect", "skinSelectorInfo", "/lol-champ-select/v1/skin-selector-info"}} {
 			value, err := c.JSON(ctx, http.MethodGet, item.path, nil)
 			if err != nil {
 				value = nil
 			}
 			if item.key == "skinSelectorInfo" {
-				c.set(item.state, item.key, value)
+				c.setForConnection(ctx, item.state, item.key, value)
 			} else {
-				c.set(item.state, item.key, List(value))
+				c.setForConnection(ctx, item.state, item.key, List(value))
 			}
 		}
 	} else {
-		c.clearChampSelect()
+		c.clearChampSelectForConnection(ctx)
 	}
 	c.mu.RLock()
 	loaded := c.assetsLoaded
@@ -160,17 +182,11 @@ func (c *Client) PollOnce(ctx context.Context) error {
 		c.loadAssets(ctx)
 	}
 	_ = c.RefreshTokens(ctx)
-	return nil
+	return ctx.Err()
 }
 
 func (c *Client) disconnect() {
-	c.SetAuth(nil)
-	defaults := initialState()
-	for _, sub := range []string{"state", "gameflow", "champSelect", "lobbyTeamBuilder", "summoner", "login", "chat", "lobby", "matchmaking", "honor"} {
-		for key, value := range defaults[sub].(map[string]any) {
-			c.set(sub, key, value)
-		}
-	}
+	c.disconnectForConnection(context.Background(), false)
 }
 
 func (c *Client) loadAssets(ctx context.Context) {
@@ -201,7 +217,7 @@ func (c *Client) loadAssets(ctx context.Context) {
 					entries[strconv.FormatInt(id, 10)] = value
 				}
 			}
-			c.set("gameData", key, entries)
+			c.setForConnection(ctx, "gameData", key, entries)
 		}(key, name)
 	}
 	wg.Wait()
@@ -213,10 +229,12 @@ func (c *Client) loadAssets(ctx context.Context) {
 			indexed[strconv.FormatInt(id, 10)] = value
 		}
 		styles["styles"] = indexed
-		c.set("gameData", "perkstyles", styles)
+		c.setForConnection(ctx, "gameData", "perkstyles", styles)
 	}
 	c.mu.Lock()
-	c.assetsLoaded = true
+	if c.connectionCurrentLocked(ctx) {
+		c.assetsLoaded = true
+	}
 	c.mu.Unlock()
 }
 
@@ -226,11 +244,12 @@ func (c *Client) RegionConfig() map[string]any {
 	server, ok := c.options.Servers[serverID]
 	c.mu.RLock()
 	auth := map[string]any{}
+	successes, failures := c.sgpConnectionSuccesses, c.sgpConnectionFailures
 	if c.auth != nil {
 		auth = c.auth.Public()
 	}
 	c.mu.RUnlock()
-	return map[string]any{"leagueServers": map[string]any{"version": 2, "servers": c.Servers()}, "isTokenReady": c.TokenReady(), "isEntitlementsTokenSet": c.TokenReady(), "isLeagueSessionTokenSet": c.TokenReady(), "supportedQueues": []int{400, 420, 430, 440, 450, 700, 1700, 2400, 2401, 2403, 2405, 2410, 2450}, "availability": map[string]any{"sgpServerId": serverID, "region": auth["region"], "rsoPlatform": auth["rsoPlatformId"], "serversSupported": map[string]any{"matchHistory": ok && server.MatchHistory != "", "common": ok && server.Common != ""}}, "connectionSuccessesCounted": 0, "connectionFailuresCounted": 0}
+	return map[string]any{"leagueServers": map[string]any{"version": 2, "servers": c.Servers()}, "isTokenReady": c.TokenReady(), "isEntitlementsTokenSet": c.TokenReady(), "isLeagueSessionTokenSet": c.TokenReady(), "supportedQueues": []int{400, 420, 430, 440, 450, 700, 1700, 2400, 2401, 2403, 2405, 2410, 2450}, "availability": map[string]any{"sgpServerId": serverID, "region": auth["region"], "rsoPlatform": auth["rsoPlatformId"], "serversSupported": map[string]any{"matchHistory": ok && server.MatchHistory != "", "common": ok && server.Common != ""}}, "connectionSuccessesCounted": successes, "connectionFailuresCounted": failures}
 }
 
 func (c *Client) SGPState() map[string]any { return c.RegionConfig() }

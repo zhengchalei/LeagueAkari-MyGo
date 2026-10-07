@@ -52,9 +52,15 @@ func (c *Client) SetServers(servers map[string]Server) {
 }
 
 func (c *Client) RefreshTokens(ctx context.Context) error {
+	ctx, cancel := c.scopeConnection(ctx)
+	defer cancel()
 	c.tokensMu.Lock()
 	defer c.tokensMu.Unlock()
 	c.mu.RLock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.RUnlock()
+		return context.Canceled
+	}
 	recent := time.Since(c.tokenTime) < time.Minute && c.entitlements != "" && c.leagueSession != ""
 	c.mu.RUnlock()
 	if recent {
@@ -74,6 +80,10 @@ func (c *Client) RefreshTokens(ctx context.Context) error {
 		return errors.New("SGP 登录凭据尚未就绪")
 	}
 	c.mu.Lock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.Unlock()
+		return context.Canceled
+	}
 	c.entitlements = accessToken
 	c.leagueSession = leagueToken
 	c.tokenTime = time.Now()
@@ -88,6 +98,13 @@ func (c *Client) TokenReady() bool {
 }
 
 func (c *Client) sgpRequest(ctx context.Context, serverID, tokenType, method, endpoint string, body any) (*http.Response, error) {
+	ctx, release := c.scopeConnection(ctx)
+	keepScope := false
+	defer func() {
+		if !keepScope {
+			release()
+		}
+	}()
 	if serverID == "" {
 		serverID = c.CurrentServer()
 	}
@@ -139,7 +156,50 @@ func (c *Client) sgpRequest(ctx context.Context, serverID, tokenType, method, en
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	return c.options.SGPHTTPClient.Do(req)
+	response, requestErr := c.options.SGPHTTPClient.Do(req)
+	c.recordSGPConnection(ctx, response, requestErr)
+	if requestErr == nil && response != nil && response.Body != nil {
+		response.Body = &scopedSGPBody{ReadCloser: response.Body, release: release}
+		keepScope = true
+	}
+	return response, requestErr
+}
+
+type scopedSGPBody struct {
+	io.ReadCloser
+	release context.CancelFunc
+}
+
+func (body *scopedSGPBody) Close() error { err := body.ReadCloser.Close(); body.release(); return err }
+
+func (c *Client) recordSGPConnection(ctx context.Context, response *http.Response, err error) {
+	// Original Axios counts successful responses and network failures without
+	// any response. HTTP status errors belong to neither connectivity counter.
+	if response != nil && (err != nil || response.StatusCode < 200 || response.StatusCode >= 300) {
+		return
+	}
+	key := "connectionSuccessesCounted"
+	c.stateUpdateMu.Lock()
+	defer c.stateUpdateMu.Unlock()
+	c.mu.Lock()
+	if !c.connectionGenerationMatchesLocked(ctx) {
+		c.mu.Unlock()
+		return
+	}
+	if err == nil {
+		c.sgpConnectionSuccesses++
+	} else {
+		key = "connectionFailuresCounted"
+		c.sgpConnectionFailures++
+	}
+	count := c.sgpConnectionSuccesses
+	if err != nil {
+		count = c.sgpConnectionFailures
+	}
+	c.mu.Unlock()
+	if c.emit != nil {
+		c.emit("mobx-utils-main", "update-state-prop/sgp-main:state", key, count, map[string]any{"action": "update", "raw": true})
+	}
 }
 
 func (c *Client) SGPJSON(ctx context.Context, serverID, tokenType, method, endpoint string, body any) (any, error) {

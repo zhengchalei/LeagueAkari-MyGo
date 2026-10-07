@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 type champSession struct {
@@ -62,7 +61,7 @@ func (r *Runner) currentSelection(ctx context.Context) (*selection, error) {
 		}
 	}
 	for _, player := range champions.MyTeam {
-		if player.CellID == champions.LocalPlayerCellID && player.ChampionID > 0 {
+		if player.CellID == champions.LocalPlayerCellID {
 			id := game.GameData.GameID
 			if id == 0 {
 				id = champions.GameID
@@ -128,6 +127,8 @@ type perkPage struct {
 	Current    bool   `json:"current"`
 }
 
+var errNoRunePages = errors.New("no rune pages available")
+
 func (r *Runner) applyRunes(ctx context.Context, self selection, config *RunesConfig) error {
 	var inventory struct {
 		CanAddCustomPage bool `json:"canAddCustomPage"`
@@ -135,21 +136,9 @@ func (r *Runner) applyRunes(ctx context.Context, self selection, config *RunesCo
 	if err := r.get(ctx, "/lol-perks/v1/inventory", &inventory); err != nil {
 		return err
 	}
-	var pages []perkPage
-	if err := r.get(ctx, "/lol-perks/v1/pages", &pages); err != nil {
-		return err
-	}
 	pageID := 0
-	// Reuse the application's own page when changing heroes; do not fill the
-	// inventory with one extra page on every selection.
-	for _, page := range pages {
-		if page.IsEditable && (strings.HasPrefix(page.Name, "[LeagueAkari-MyGo]") || strings.HasPrefix(page.Name, "[Timo]")) {
-			pageID = page.ID
-			break
-		}
-	}
 	name := r.pageName(self)
-	if pageID == 0 && inventory.CanAddCustomPage {
+	if inventory.CanAddCustomPage {
 		if err := r.guard(ctx, self); err != nil {
 			return err
 		}
@@ -164,21 +153,16 @@ func (r *Runner) applyRunes(ctx context.Context, self selection, config *RunesCo
 			return err
 		}
 		pageID = page.ID
-	}
-	if pageID == 0 && !inventory.CanAddCustomPage {
-		for _, page := range pages {
-			if page.IsEditable {
-				if pageID == 0 || page.Current {
-					pageID = page.ID
-				}
-				if page.Current {
-					break
-				}
-			}
+	} else {
+		var pages []perkPage
+		if err := r.get(ctx, "/lol-perks/v1/pages", &pages); err != nil {
+			return err
 		}
-	}
-	if pageID <= 0 {
-		return errors.New("没有可编辑的符文页")
+		if len(pages) > 0 {
+			pageID = pages[0].ID
+		} else {
+			return errNoRunePages
+		}
 	}
 	body := map[string]any{"id": pageID, "name": name,
 		"isRecommendationOverride": false, "isTemporary": false,
@@ -199,9 +183,12 @@ func (r *Runner) pageName(self selection) string {
 			championName = name
 		}
 	}
-	name := "[LeagueAkari-MyGo] " + championName
+	name := "[Akari] " + championName
 	if self.Position != "" {
 		position := map[string]string{"top": "上路", "jungle": "打野", "middle": "中路", "bottom": "下路", "utility": "辅助"}[self.Position]
+		if r.english() {
+			position = map[string]string{"top": "Top", "jungle": "Jungle", "middle": "Middle", "bottom": "Bottom", "utility": "Support"}[self.Position]
+		}
 		if position == "" {
 			position = self.Position
 		}

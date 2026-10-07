@@ -20,6 +20,7 @@ import (
 
 type Options struct {
 	Directory, Version, Repository, APIBase string
+	Layout                                  string
 	HTTP                                    *http.Client
 	Emit                                    bridge.Emitter
 }
@@ -156,7 +157,11 @@ func (s *Service) Check(ctx context.Context) (map[string]any, error) {
 	var archive map[string]any
 	priority := 0
 	for _, asset := range release.Assets {
-		if candidate := archivePriority(asset.Name, release.Tag); candidate > priority {
+		candidate := archivePriority(asset.Name, release.Tag)
+		if s.options.Layout == "winui" {
+			candidate = winUIArchivePriority(asset.Name, release.Tag)
+		}
+		if candidate > priority {
 			archive = map[string]any{"name": asset.Name, "size": asset.Size, "downloadUrl": asset.URL, "contentType": asset.ContentType}
 			priority = candidate
 		}
@@ -171,6 +176,9 @@ func (s *Service) Check(ctx context.Context) (map[string]any, error) {
 	}
 	if latest["isNew"] == true {
 		if archive == nil {
+			if s.options.Layout == "winui" {
+				return result("failed", "未找到 WinUI Windows x64 更新包"), nil
+			}
 			return result("failed", "未找到 MyGo Windows x64 更新包"), nil
 		}
 		return result("new-updates", ""), nil
@@ -190,6 +198,9 @@ func (s *Service) Start(ctx context.Context, force bool) (map[string]any, error)
 	}
 	archive, _ := latest["archiveFile"].(map[string]any)
 	if archive == nil {
+		if s.options.Layout == "winui" {
+			return result("failed", "未找到 WinUI 更新包"), nil
+		}
 		return result("failed", "未找到 MyGo 更新包"), nil
 	}
 	// Download lifetime belongs to the job, not to a completed IPC request.
@@ -222,6 +233,9 @@ func (s *Service) download(ctx context.Context, archive map[string]any) {
 		if ctx.Err() == nil {
 			s.set("updateProgressInfo", map[string]any{"phase": "download-failed", "downloadingProgress": 0, "averageDownloadSpeed": 0, "downloadTimeLeft": 0, "fileSize": archive["size"]})
 			s.set("lastUpdateResult", map[string]any{"success": false, "reason": err.Error()})
+			if s.options.Emit != nil {
+				s.options.Emit("self-update-main", "error-download-update", map[string]any{"message": err.Error()})
+			}
 		}
 	}
 	defer func() { s.mu.Lock(); s.cancel = nil; s.mu.Unlock() }()
@@ -291,7 +305,12 @@ func (s *Service) download(ctx context.Context, archive map[string]any) {
 		return
 	}
 	destination := filepath.Join(s.options.Directory, "prepared")
-	executable, err := prepareExecutable(path, destination)
+	var executable string
+	if s.options.Layout == "winui" {
+		executable, err = prepareWinUIDirectory(path, destination)
+	} else {
+		executable, err = prepareExecutable(path, destination)
+	}
 	if err != nil {
 		failed(err)
 		return

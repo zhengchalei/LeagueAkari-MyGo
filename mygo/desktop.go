@@ -33,28 +33,40 @@ type object = map[string]any
 
 // Desktop implements the existing UI contract with a Go host and one WebView2.
 type Desktop struct {
-	quitting             atomic.Bool
-	mu                   sync.RWMutex
-	windowMu             sync.Mutex
-	store                *settings.Store
-	client               *client.Client
-	game                 *game.Service
-	automation           *automation.Runner
-	champion             *champion.Runner
-	player               *player.Service
-	platform             *platform.Service
-	misc                 *misc.Service
-	respawn              *respawn.Service
-	updater              *selfupdate.Service
-	fixedShortcutTargets map[string]bool
-	sendMu               sync.Mutex
-	ctx                  context.Context
-	externalClient       *http.Client
-	proxyRequests        sync.Map
-	windows              map[string]*mygo.Window
-	static               map[string]object
-	started              time.Time
-	tray                 *mygo.Tray
+	quitting                     atomic.Bool
+	mu                           sync.RWMutex
+	windowMu                     sync.Mutex
+	store                        *settings.Store
+	client                       *client.Client
+	game                         *game.Service
+	automation                   *automation.Runner
+	champion                     *champion.Runner
+	player                       *player.Service
+	platform                     *platform.Service
+	misc                         *misc.Service
+	respawn                      *respawn.Service
+	updater                      *selfupdate.Service
+	fixedShortcutTargets         map[string]bool
+	sendMu                       sync.Mutex
+	presetSelections             presetSelectionController
+	ctx                          context.Context
+	externalClient               *http.Client
+	proxyRequests                sync.Map
+	windows                      map[string]*mygo.Window
+	nativeMini                   *nativeMiniRuntime
+	static                       map[string]object
+	started                      time.Time
+	tray                         *mygo.Tray
+	userData                     string
+	skipExternalStorageMigration bool
+	eventSink                    func(bridge.Event)
+	hostCall                     func(context.Context, string, string, []any) (any, error)
+	winUIDodgeMu                 sync.Mutex
+	winUIDodgeCancel             context.CancelFunc
+	winUIDodgeCount              atomic.Int64
+	winUIDodgeActive             atomic.Bool
+	winUIHostPID                 int
+	winUIHostExecutable          string
 }
 
 type CallResult struct {
@@ -68,12 +80,19 @@ func (d *Desktop) initialize(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	return d.initializeWithDirectory(ctx, dir)
+}
+
+func (d *Desktop) initializeWithDirectory(ctx context.Context, dir string) error {
+	d.userData = dir
+	var err error
 	d.store, err = settings.New(filepath.Join(dir, "settings.json"))
 	if err != nil {
 		return err
 	}
 	d.windows = map[string]*mygo.Window{}
 	d.static = staticStates()
+	d.initializeStartupDiagnostics()
 	d.static["extra-assets-main:opgg"]["cached"] = true
 	d.loadKiwiBalance(dir)
 	d.started = time.Now()
@@ -86,9 +105,6 @@ func (d *Desktop) initialize(ctx context.Context) error {
 	if level := d.store.Get("logger-factory-main", "logLevel"); level != nil {
 		d.static["logger-factory-main:state"]["logLevel"] = level
 	}
-	if !d.store.HasPersisted("ongoing-game-main", "matchHistoryLoadCount") {
-		_ = d.store.Set("ongoing-game-main", "matchHistoryLoadCount", 20)
-	}
 	d.externalClient = newExternalHTTPClient(d.store)
 	d.client = client.NewWithOptions(d.clientEvent, client.Options{SGPHTTPClient: &http.Client{
 		Transport: d.externalClient.Transport, Timeout: 15 * time.Second,
@@ -97,7 +113,7 @@ func (d *Desktop) initialize(ctx context.Context) error {
 		d.clientEvent("league-client-main", "lcu-event", uri, eventType, data)
 	})
 	d.client.SetAutoConnect(d.settingValue("league-client-main", "autoConnect") != false)
-	d.platform = platform.New(platform.Options{Client: d.client, Store: d.store, Emit: d.emit, WindowAction: d.windowCallByName})
+	d.platform = platform.New(platform.Options{Client: d.client, Store: d.store, Emit: d.emit, WindowAction: d.hostWindowCall})
 	d.static["app-common-main:state"]["nativeSupport"] = d.platform.NativeSupport()
 	d.static["app-common-main:state"]["isElevated"] = d.platform.IsElevated()
 	d.player, err = player.New(filepath.Join(dir, "players.sqlite"), d.store, d.emit)
@@ -105,6 +121,10 @@ func (d *Desktop) initialize(ctx context.Context) error {
 		return err
 	}
 	d.player.SetFileDialog(func(kind string) (string, error) {
+		if d.hostCall != nil {
+			value, err := d.hostCall(ctx, "host-ui", "fileDialog", []any{kind, "league-akari-mygo-player-tags.json"})
+			return client.String(value), err
+		}
 		if kind == "save" {
 			return mygo.Dialog.Save(mygo.SaveDialogOptions{DefaultPath: "league-akari-mygo-player-tags.json"})
 		}
@@ -120,24 +140,17 @@ func (d *Desktop) initialize(ctx context.Context) error {
 	d.automation = automation.New(d.client, d.store, d.emit)
 	d.misc = misc.New(d.client, d.store, d.emit)
 	d.respawn = respawn.New(d.client, d.platform, d.store, d.emit)
-	d.updater = selfupdate.New(selfupdate.Options{Directory: filepath.Join(dir, "new-updates"), Version: appVersion, Repository: updateRepository(), HTTP: &http.Client{Transport: d.externalClient.Transport, Timeout: 30 * time.Minute}, Emit: d.emit})
+	updateLayout := ""
+	if d.hostCall != nil {
+		updateLayout = "winui"
+	}
+	d.updater = selfupdate.New(selfupdate.Options{Directory: filepath.Join(dir, "new-updates"), Version: appVersion, Repository: updateRepository(), Layout: updateLayout, HTTP: &http.Client{Transport: d.externalClient.Transport, Timeout: 30 * time.Minute}, Emit: d.emit})
 	d.fixedShortcutTargets = map[string]bool{}
 	d.syncSendShortcuts()
 	d.champion = champion.New(d.client, d.store, d.emit)
 	var groups []automation.SelectGroup
 	_ = json.Unmarshal(selectGroups, &groups)
 	d.automation.SetSelectGroups(groups)
-	if d.store.Get("mygo-main", "memorySettingsMigrated") != true {
-		if err := d.store.Set("ongoing-game-main", "matchHistoryLoadCount", 20); err != nil {
-			return err
-		}
-		if err := d.store.Set("ongoing-game-main", "gameDetailsLoadCount", 0); err != nil {
-			return err
-		}
-		if err := d.store.Set("mygo-main", "memorySettingsMigrated", true); err != nil {
-			return err
-		}
-	}
 	d.game.SetMatchHistoryLoadCount(int(client.Number(d.settingValue("ongoing-game-main", "matchHistoryLoadCount"))))
 	d.store.OnChange(d.settingChanged)
 	return nil
@@ -165,10 +178,33 @@ func (d *Desktop) clientEvent(namespace, name string, args ...any) {
 		}
 		return
 	}
+	if d.misc != nil {
+		ctx := d.ctx
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		_ = d.misc.HandleEvent(ctx, namespace, name, args...)
+	}
 	d.emit(namespace, name, args...)
 }
 
 func (d *Desktop) emit(namespace, name string, args ...any) {
+	if namespace == "mobx-utils-main" && name == "update-state-prop/ongoing-game-main:state" && len(args) > 0 {
+		key := client.String(args[0])
+		if key == "teams" || key == "positionAssignments" || key == "additional" || key == "additional.spells" || key == "mergedPremadeTeamMap" {
+			d.syncPresetSelections()
+		}
+	}
+	if d.eventSink != nil {
+		d.eventSink(bridge.Event{Namespace: namespace, Name: name, Args: args})
+		return
+	}
+	d.mu.RLock()
+	mini := d.nativeMini
+	d.mu.RUnlock()
+	if mini != nil && (namespace == "league-client-main" || namespace == "mobx-utils-main" && len(args) > 0 && (strings.Contains(name, "league-client-main:") || strings.Contains(name, "extra-assets-main:") || strings.Contains(name, "auto-select-main:") || strings.Contains(name, "auto-gameflow-main:"))) {
+		mini.wake()
+	}
 	rendererEvents.Broadcast(bridge.Event{Namespace: namespace, Name: name, Args: args})
 }
 
@@ -223,6 +259,11 @@ func (d *Desktop) Call(ctx context.Context, namespace, method string, args []any
 }
 
 func (d *Desktop) dispatch(ctx context.Context, ns, method string, args []any) (any, error) {
+	if d.hostCall != nil {
+		if value, handled, err := d.headlessCall(ctx, ns, method, args); handled {
+			return value, err
+		}
+	}
 	switch ns {
 	case "mobx-utils-main":
 		if method == "subscribeAndGetInitialState" {
@@ -416,6 +457,9 @@ func (d *Desktop) dispatch(ctx context.Context, ns, method string, args []any) (
 }
 
 func (d *Desktop) state(ns, id string) object {
+	if ns == "in-game-send-main" && id == "state" {
+		d.syncPresetSelections()
+	}
 	if id == "settings" {
 		return d.settingSnapshot(ns)
 	}

@@ -1,0 +1,23 @@
+using System.Text.Json;
+using LeagueAkari.WinUI.Services;
+int passed = 0;
+void Check(string name, bool okay) { if (!okay) throw new Exception(name); passed++; Console.WriteLine("PASS " + name); }
+JsonElement Value(object value) => JsonSerializer.SerializeToElement(value);
+var picks = Value(new { session = new { myTeam = new[] { new { championId = 0, championPickIntent = 147 }, new { championId = 103, championPickIntent = 17 } }, theirTeam = new[] { new { championId = 103, championPickIntent = 0 }, new { championId = -3, championPickIntent = 0 } } } });
+Check("Champ select includes hovered champion and both sides", OpggSessionData.Champions(Value(new { phase = "ChampSelect" }), picks).SequenceEqual(new[] { 147, 103 }));
+Check("Lobby shows no stale champions", OpggSessionData.Champions(Value(new { phase = "Lobby" }), picks).Length == 0);
+var flow = Value(new { phase = "InProgress", session = new { gameData = new { teamOne = new[] { new { championId = 1 }, new { championId = 2 } }, teamTwo = new[] { new { championId = 2 }, new { championId = 3 } } } } });
+Check("Live teams are deduplicated", OpggSessionData.Champions(flow, default).SequenceEqual(new[] { 1, 2, 3 }));
+Check("KIWI never auto applies ARAM runes/spells", !OpggSessionData.CanAutoApplyRunesAndSpells("KIWI"));
+Check("ARAM retains auto loadout", OpggSessionData.CanAutoApplyRunesAndSpells("ARAM"));
+Check("Ranked preset precedence includes fallback", OpggSessionData.ConfigKeys("CLASSIC", "RANKED_SOLO_5x5", "top").SequenceEqual(new[] { "ranked-top", "ranked-default" }));
+Check("Normal config key", OpggSessionData.ConfigKeys("CLASSIC", "NORMAL", "top").SequenceEqual(new[] { "normal" }));
+Check("KIWI no ARAM user preset conflict", OpggSessionData.ConfigKeys("KIWI", "KIWI", null).Length == 0);
+var balance = OpggSessionData.Balance(Value(new { damage_dealt = 105, damage_taken = 90, attack_speed = 100, cooldown_reduction = -10, healing = 95, tenacity = 0, shield_amount = 100 }));
+Check("Neutral changes hidden", balance.Length == 4);
+Check("Damage taken decrease is buff", balance.First(r => r.Key == "damage_taken").Buff);
+Check("Negative haste is debuff and literal", balance.First(r => r.Key == "cooldown_reduction") is { Buff: false, Percentage: false, Delta: -10 });
+Check("Source percentages converted to relative deltas", OpggSessionData.DeltaText(balance.First(r => r.Key == "damage_dealt")) == "+5%");
+Check("Literal does not get percent suffix", OpggSessionData.DeltaText(balance.First(r => r.Key == "cooldown_reduction")) == "-10");
+Check("Undefined metrics not fabricated", OpggSessionData.Balance(Value(new { })).Length == 0);
+Console.WriteLine($"OP.GG session and balance contracts: {passed} passed");

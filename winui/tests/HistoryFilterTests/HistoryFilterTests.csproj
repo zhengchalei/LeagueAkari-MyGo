@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../LeagueAkari.WinUI/Services/HistoryFilter.cs" Link="HistoryFilter.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/HistoryFilterEditorData.cs" Link="HistoryFilterEditorData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/HistoryCollection.cs" Link="HistoryCollection.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/MatchData.cs" Link="MatchData.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/PlayerDataSource.cs" Link="PlayerDataSource.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/SourceAvailability.cs" Link="SourceAvailability.cs" />
+    <Compile Include="../../LeagueAkari.WinUI/Services/JsonExtensions.cs" Link="JsonExtensions.cs" />
+  </ItemGroup>
+</Project>

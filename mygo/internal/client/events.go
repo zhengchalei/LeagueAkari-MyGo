@@ -64,8 +64,11 @@ func endpointParams(pattern, uri string) (map[string]any, bool) {
 }
 
 func (c *Client) dispatchEvent(event map[string]any) {
+	c.dispatchEventForConnection(context.Background(), event)
+}
+func (c *Client) dispatchEventForConnection(ctx context.Context, event map[string]any) {
 	c.mu.RLock()
-	disconnected := c.manualDisconnect || (c.eventsConnected && c.auth == nil)
+	disconnected := !c.connectionCurrentLocked(ctx) || c.manualDisconnect || (c.eventsConnected && c.auth == nil)
 	c.mu.RUnlock()
 	if disconnected {
 		return // Ignore frames from a stream that is still closing after disconnect.
@@ -90,37 +93,49 @@ func (c *Client) dispatchEvent(event map[string]any) {
 		"/lol-champ-select/v1/ongoing-champion-swap":         {"champSelect", "ongoingChampionSwap"},
 	}
 	if field, ok := fields[uri]; ok {
-		c.set(field[0], field[1], data)
+		c.setForConnection(ctx, field[0], field[1], data)
 	}
 	switch uri {
 	case subsetChampionListEndpoint:
-		c.setSubsetChampionList(data)
+		c.setSubsetChampionListForConnection(ctx, data)
 	case "/lol-champ-select/v1/session":
-		c.setChampSelectSession(data)
+		c.setChampSelectSessionForConnection(ctx, data)
 	case "/lol-champ-select/v1/current-champion":
-		c.setCurrentChampion(data)
+		c.setCurrentChampionForConnection(ctx, data)
 	case "/lol-champ-select/v1/pickable-champion-ids":
-		c.set("champSelect", "currentPickableChampionIds", List(data))
+		c.setForConnection(ctx, "champSelect", "currentPickableChampionIds", List(data))
 	case "/lol-champ-select/v1/bannable-champion-ids":
-		c.set("champSelect", "currentBannableChampionIds", List(data))
+		c.setForConnection(ctx, "champSelect", "currentBannableChampionIds", List(data))
 	case "/lol-champ-select/v1/disabled-champion-ids":
-		c.set("champSelect", "disabledChampionIds", List(data))
+		c.setForConnection(ctx, "champSelect", "disabledChampionIds", List(data))
 	case "/lol-gameflow/v1/gameflow-phase":
 		if String(data) != "ChampSelect" {
-			c.clearChampSelect()
+			c.clearChampSelectForConnection(ctx)
 		}
 	}
-	c.dispatchChatEvent(uri, eventType, event["data"])
+	c.dispatchChatEvent(uri, eventType, event["data"], ctx)
 	if c.emit == nil {
 		return
 	}
 	c.mu.RLock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.RUnlock()
+		return
+	}
 	handler := c.onEvent
 	c.mu.RUnlock()
 	if handler != nil {
 		handler(uri, String(event["eventType"]), event["data"])
 	}
+	// Endpoint forwarding follows state-reset ordering too: a late callback
+	// must not publish its old frame after the new connection was selected.
+	c.stateUpdateMu.Lock()
+	defer c.stateUpdateMu.Unlock()
 	c.mu.RLock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.RUnlock()
+		return
+	}
 	subscriptions := map[string]string{}
 	for id, path := range c.subscriptions {
 		subscriptions[id] = path
@@ -135,12 +150,24 @@ func (c *Client) dispatchEvent(event map[string]any) {
 
 func (c *Client) eventLoop(ctx context.Context) {
 	for ctx.Err() == nil {
+		c.mu.RLock()
+		generation := c.connectionGeneration
+		changed := c.connectionChanged
+		c.mu.RUnlock()
 		_ = c.consumeEvents(ctx)
+		c.mu.RLock()
+		current := c.connectionGeneration
+		c.mu.RUnlock()
+		if current != generation {
+			continue
+		}
 		timer := time.NewTimer(2 * time.Second)
 		select {
 		case <-ctx.Done():
 			timer.Stop()
 			return
+		case <-changed:
+			timer.Stop()
 		case <-timer.C:
 		}
 	}
@@ -149,10 +176,16 @@ func (c *Client) eventLoop(ctx context.Context) {
 // LCU uses one WAMP topic over a local WebSocket. The read-only stream subscribes
 // to that topic and forwards only endpoint events requested by renderer features.
 func (c *Client) consumeEvents(ctx context.Context) error {
+	ctx, cancel := c.scopeConnection(ctx)
+	defer cancel()
 	c.mu.RLock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.RUnlock()
+		return context.Canceled
+	}
 	var auth *Auth
-	if c.auth != nil {
-		copy := *c.auth
+	if scoped := ctx.Value(connectionScopeKey{}).(connectionScope); scoped.auth != nil {
+		copy := *scoped.auth
 		auth = &copy
 	}
 	c.mu.RUnlock()
@@ -200,9 +233,19 @@ func (c *Client) consumeEvents(ctx context.Context) error {
 		return err
 	}
 	c.mu.Lock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.Unlock()
+		return context.Canceled
+	}
 	c.eventsConnected = true
 	c.mu.Unlock()
-	defer func() { c.mu.Lock(); c.eventsConnected = false; c.mu.Unlock() }()
+	defer func() {
+		c.mu.Lock()
+		if c.connectionGenerationMatchesLocked(ctx) {
+			c.eventsConnected = false
+		}
+		c.mu.Unlock()
+	}()
 	var message []byte
 	for {
 		opcode, final, payload, err := readFrame(conn)
@@ -232,7 +275,7 @@ func (c *Client) consumeEvents(ctx context.Context) error {
 		if final {
 			var packet []any
 			if json.Unmarshal(message, &packet) == nil && len(packet) == 3 && Number(packet[0]) == 8 {
-				c.dispatchEvent(Map(packet[2]))
+				c.dispatchEventForConnection(ctx, Map(packet[2]))
 			}
 			message = nil
 		}

@@ -54,22 +54,28 @@ func (e *StatusError) Error() string {
 }
 
 type Client struct {
-	mu               sync.RWMutex
-	tokensMu         sync.Mutex
-	auth             *Auth
-	entitlements     string
-	leagueSession    string
-	tokenTime        time.Time
-	state            map[string]any
-	emit             bridge.Emitter
-	options          Options
-	assetsLoaded     bool
-	subscriptions    map[string]string
-	subscriptionID   uint64
-	eventsConnected  bool
-	autoConnect      bool
-	manualDisconnect bool
-	onEvent          func(uri, eventType string, data any)
+	mu                                            sync.RWMutex
+	stateUpdateMu                                 sync.Mutex
+	tokensMu                                      sync.Mutex
+	auth                                          *Auth
+	entitlements                                  string
+	leagueSession                                 string
+	tokenTime                                     time.Time
+	state                                         map[string]any
+	emit                                          bridge.Emitter
+	options                                       Options
+	assetsLoaded                                  bool
+	subscriptions                                 map[string]string
+	subscriptionID                                uint64
+	eventsConnected                               bool
+	autoConnect                                   bool
+	manualDisconnect                              bool
+	connectionGeneration                          uint64
+	connectionContext                             context.Context
+	connectionCancel                              context.CancelFunc
+	connectionChanged                             chan struct{}
+	sgpConnectionSuccesses, sgpConnectionFailures int
+	onEvent                                       func(uri, eventType string, data any)
 }
 
 func New(emit bridge.Emitter) *Client { return NewWithOptions(emit, Options{}) }
@@ -94,11 +100,18 @@ func NewWithOptions(emit bridge.Emitter, options Options) *Client {
 	if options.PollInterval <= 0 {
 		options.PollInterval = 2 * time.Second
 	}
-	return &Client{options: options, state: initialState(), emit: emit, subscriptions: map[string]string{}, autoConnect: true}
+	lifetime, cancel := context.WithCancel(context.Background())
+	return &Client{options: options, state: initialState(), emit: emit, subscriptions: map[string]string{}, autoConnect: true, connectionContext: lifetime, connectionCancel: cancel, connectionChanged: make(chan struct{})}
 }
 
 func (c *Client) SetAutoConnect(enabled bool) {
 	c.mu.Lock()
+	if !c.autoConnect && enabled {
+		c.manualDisconnect = false
+	}
+	if c.autoConnect != enabled && c.auth == nil {
+		c.renewConnectionLocked()
+	}
 	c.autoConnect = enabled
 	c.mu.Unlock()
 	c.set("settings", "autoConnect", enabled)
@@ -109,19 +122,34 @@ func (c *Client) SetEventHandler(handler func(string, string, any)) {
 	c.mu.Unlock()
 }
 func (c *Client) Connect(ctx context.Context, auth *Auth) error {
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
 	if auth == nil {
 		return errors.New("未发现可连接的客户端")
 	}
 	c.mu.Lock()
 	c.manualDisconnect = false
+	c.assignAuthLocked(auth, true)
+	ctx, cancel := c.scopeConnectionLocked(ctx)
 	c.mu.Unlock()
-	c.set("state", "connectingClient", auth.Public())
-	c.SetAuth(auth)
+	defer cancel()
+	defaults := initialState()
+	for _, sub := range []string{"state", "gameflow", "champSelect", "lobbyTeamBuilder", "summoner", "login", "chat", "lobby", "matchmaking", "honor"} {
+		for key, value := range Map(defaults[sub]) {
+			c.setForConnection(ctx, sub, key, value)
+		}
+	}
+	c.setForConnection(ctx, "state", "connectionState", "connecting")
+	c.setForConnection(ctx, "state", "connectingClient", auth.Public())
 	err := c.PollOnce(ctx)
-	c.set("state", "connectingClient", nil)
+	if err != nil {
+		c.disconnectForConnection(ctx, false)
+	}
+	c.setForConnection(ctx, "state", "connectingClient", nil)
 	return err
 }
-func (c *Client) Disconnect() { c.mu.Lock(); c.manualDisconnect = true; c.mu.Unlock(); c.disconnect() }
+func (c *Client) Disconnect() { c.disconnectForConnection(context.Background(), true) }
 
 func initialState() map[string]any {
 	return map[string]any{
@@ -200,11 +228,18 @@ func (c *Client) CurrentServer() string {
 
 func (c *Client) SetAuth(auth *Auth) {
 	c.mu.Lock()
+	c.assignAuthLocked(auth, false)
+	c.mu.Unlock()
+}
+func (c *Client) assignAuthLocked(auth *Auth, force bool) {
 	if !reflect.DeepEqual(c.auth, auth) {
 		c.entitlements = ""
 		c.leagueSession = ""
 		c.tokenTime = time.Time{}
 		c.assetsLoaded = false
+	}
+	if force || !reflect.DeepEqual(c.auth, auth) {
+		c.renewConnectionLocked()
 	}
 	if auth == nil {
 		c.auth = nil
@@ -212,11 +247,19 @@ func (c *Client) SetAuth(auth *Auth) {
 		copied := *auth
 		c.auth = &copied
 	}
-	c.mu.Unlock()
 }
 
 func (c *Client) set(substate, key string, value any) {
+	c.setForConnection(context.Background(), substate, key, value)
+}
+func (c *Client) setForConnection(ctx context.Context, substate, key string, value any) {
+	c.stateUpdateMu.Lock()
+	defer c.stateUpdateMu.Unlock()
 	c.mu.Lock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.Unlock()
+		return
+	}
 	fields := c.state[substate].(map[string]any)
 	changed := !reflect.DeepEqual(fields[key], value)
 	fields[key] = value
@@ -229,24 +272,33 @@ func (c *Client) set(substate, key string, value any) {
 const subsetChampionListEndpoint = "/lol-lobby-team-builder/champ-select/v1/subset-champion-list"
 
 func (c *Client) setSubsetChampionList(value any) {
+	c.setSubsetChampionListForConnection(context.Background(), value)
+}
+func (c *Client) setSubsetChampionListForConnection(ctx context.Context, value any) {
 	// Replace the nested object so both shallow-reactive renderer stores update.
-	c.set("lobbyTeamBuilder", "champSelect", map[string]any{"subsetChampionList": List(value)})
+	c.setForConnection(ctx, "lobbyTeamBuilder", "champSelect", map[string]any{"subsetChampionList": List(value)})
 }
 
 func (c *Client) setCurrentChampion(value any) {
+	c.setCurrentChampionForConnection(context.Background(), value)
+}
+func (c *Client) setCurrentChampionForConnection(ctx context.Context, value any) {
 	if champion := Number(value); champion > 0 {
-		c.set("champSelect", "currentChampion", champion)
+		c.setForConnection(ctx, "champSelect", "currentChampion", champion)
 	} else {
-		c.set("champSelect", "currentChampion", nil)
+		c.setForConnection(ctx, "champSelect", "currentChampion", nil)
 	}
 }
 
 func (c *Client) setChampSelectSession(value any) {
+	c.setChampSelectSessionForConnection(context.Background(), value)
+}
+func (c *Client) setChampSelectSessionForConnection(ctx context.Context, value any) {
 	if len(Map(value)) == 0 {
-		c.clearChampSelect()
+		c.clearChampSelectForConnection(ctx)
 		return
 	}
-	c.set("champSelect", "session", value)
+	c.setForConnection(ctx, "champSelect", "session", value)
 	session := Map(value)
 	var champion any
 	for _, member := range List(session["myTeam"]) {
@@ -256,14 +308,17 @@ func (c *Client) setChampSelectSession(value any) {
 			break
 		}
 	}
-	c.setCurrentChampion(champion)
+	c.setCurrentChampionForConnection(ctx, champion)
 }
 
 func (c *Client) clearChampSelect() {
+	c.clearChampSelectForConnection(context.Background())
+}
+func (c *Client) clearChampSelectForConnection(ctx context.Context) {
 	for key, value := range Map(initialState()["champSelect"]) {
-		c.set("champSelect", key, value)
+		c.setForConnection(ctx, "champSelect", key, value)
 	}
-	c.setSubsetChampionList(nil)
+	c.setSubsetChampionListForConnection(ctx, nil)
 }
 
 func encodeBody(body any) (io.Reader, error) {
@@ -285,9 +340,17 @@ func encodeBody(body any) (io.Reader, error) {
 
 func (c *Client) request(ctx context.Context, method, endpoint string, body any) (*http.Response, error) {
 	c.mu.RLock()
+	if !c.connectionCurrentLocked(ctx) {
+		c.mu.RUnlock()
+		return nil, context.Canceled
+	}
 	var auth *Auth
 	if c.auth != nil {
 		copied := *c.auth
+		auth = &copied
+	}
+	if scope, ok := ctx.Value(connectionScopeKey{}).(connectionScope); ok && scope.auth != nil {
+		copied := *scope.auth
 		auth = &copied
 	}
 	c.mu.RUnlock()

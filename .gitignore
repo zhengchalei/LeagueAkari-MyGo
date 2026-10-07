@@ -19,3 +19,7 @@ mygo/evidence/
 .env.*
 *.log
 prepare_preview.py
+winui/**/bin/
+winui/**/obj/
+winui/build/
+winui/evidence/

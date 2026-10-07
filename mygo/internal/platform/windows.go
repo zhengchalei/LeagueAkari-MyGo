@@ -26,6 +26,10 @@ func (s *Service) followWindows(ctx context.Context) {
 		namespace := "window-manager-main/" + name
 		enabled := s.Setting(namespace, "enabled") == true
 		if !enabled {
+			if name == "cd-timer-window" {
+				s.lastTimerUse = false
+				s.set(namespace, "gameTime", nil)
+			}
 			_, _ = s.options.WindowAction(name, "close", nil)
 			continue
 		}
@@ -59,13 +63,14 @@ func (s *Service) followWindows(ctx context.Context) {
 				}
 			}
 			use := phase == "InProgress" && supported
-			if changed {
+			if changed || use != s.lastTimerUse {
 				method := "hide"
 				if use {
 					method = "show"
 				}
 				_, _ = s.options.WindowAction(name, method, []any{true})
 			}
+			s.lastTimerUse = use
 			if use && time.Since(s.lastTimerPoll) >= 4*time.Second {
 				s.lastTimerPoll = time.Now()
 				value, err := s.GameJSON(ctx, http.MethodGet, "/liveclientdata/gamestats", nil)

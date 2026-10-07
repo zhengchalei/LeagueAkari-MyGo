@@ -88,6 +88,7 @@ func Discover(ctx context.Context) (*Auth, error) {
 	entry := processEntry{}
 	entry.Size = uint32(unsafe.Sizeof(entry))
 	ok, _, _ := processFirst.Call(handle, uintptr(unsafe.Pointer(&entry)))
+	candidates := []*Auth{}
 	for ok != 0 {
 		if err := ctx.Err(); err != nil {
 			return nil, err
@@ -96,17 +97,19 @@ func Discover(ctx context.Context) (*Auth, error) {
 		if strings.EqualFold(name, "LeagueClientUx.exe") || strings.EqualFold(name, "LeagueClient.exe") {
 			command, imagePath := processCommandLine(entry.ProcessID)
 			if auth := ParseCommandLine(command, int(entry.ProcessID)); auth != nil {
-				return auth, nil
+				candidates = append(candidates, auth)
+				ok, _, _ = processNext.Call(handle, uintptr(unsafe.Pointer(&entry)))
+				continue
 			}
 			if imagePath != "" {
 				if data, err := os.ReadFile(filepath.Join(filepath.Dir(imagePath), "lockfile")); err == nil {
 					if auth := ParseLockfile(string(data)); auth != nil {
-						return auth, nil
+						candidates = append(candidates, auth)
 					}
 				}
 			}
 		}
 		ok, _, _ = processNext.Call(handle, uintptr(unsafe.Pointer(&entry)))
 	}
-	return nil, nil
+	return uniqueDiscoveredConnection(candidates), nil
 }

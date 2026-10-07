@@ -16,6 +16,27 @@ import (
 func (d *Desktop) sendCall(ctx context.Context, method string, args []any) (any, error) {
 	const ns = "in-game-send-main"
 	switch method {
+	case "generatePlayerAnalysis":
+		return d.generatePlayerAnalysis(ctx, textArg(args, 0), asObject(arg(args, 1)))
+	case "generateRatingPresetLines", "generateJunglePresetLines", "generatePremadePresetLines", "sendRatingPreset", "sendJunglePreset", "sendPremadePreset":
+		target := textArg(args, 0)
+		if target != "friendly" && target != "enemy" && target != "all" {
+			return nil, errors.New("无效的发送目标")
+		}
+		kind := strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(method, "generate"), "send"), "PresetLines")
+		kind = strings.TrimSuffix(kind, "Preset")
+		lines, err := d.generatePreset(ctx, kind, target)
+		if err != nil {
+			return nil, err
+		}
+		if strings.HasPrefix(method, "generate") {
+			return lines, nil
+		}
+		values := make([]any, len(lines))
+		for i, line := range lines {
+			values[i] = line
+		}
+		return d.sendCall(ctx, "sendLines", []any{values})
 	case "sendLines":
 		lines := []string{}
 		for _, entry := range client.List(arg(args, 0)) {
@@ -51,7 +72,7 @@ func (d *Desktop) sendCall(ctx context.Context, method string, args []any) (any,
 			item := asObject(entry)
 			if item["id"] == arg(args, 0) {
 				lines := []any{}
-				for _, line := range strings.Split(client.String(item["content"]), "\n") {
+				for _, line := range strings.Split(strings.ReplaceAll(strings.ReplaceAll(client.String(item["content"]), "\r\n", "\n"), "\r", "\n"), "\n") {
 					lines = append(lines, line)
 				}
 				return d.sendCall(ctx, "sendLines", []any{lines})
@@ -60,15 +81,15 @@ func (d *Desktop) sendCall(ctx context.Context, method string, args []any) (any,
 		return false, nil
 	case "setRatingPuuids", "setJunglePuuids", "setPremadeIndices":
 		key := lowerFirst(strings.TrimPrefix(method, "set"))
-		values := arg(args, 0)
-		d.setStatic(ns+":state", key, values)
-		d.update(ns, "state", key, values)
+		d.setPresetSelection(key, arg(args, 0))
 		return nil, nil
 	case "clearPresetSelections":
+		d.presetSelections.mu.Lock()
+		d.syncPresetSelectionsLocked(d.game.State())
 		for _, key := range []string{"ratingPuuids", "junglePuuids", "premadeIndices"} {
-			d.setStatic(ns+":state", key, []any{})
-			d.update(ns, "state", key, []any{})
+			d.publishPresetSelection(key, []any{})
 		}
+		d.presetSelections.mu.Unlock()
 		return nil, nil
 	case "setRatingPresetOptions", "setJunglePresetOptions", "setPremadePresetOptions", "updateRatingPresetOptions", "updateJunglePresetOptions", "updatePremadePresetOptions":
 		prefix := "set"
@@ -79,7 +100,13 @@ func (d *Desktop) sendCall(ctx context.Context, method string, args []any) (any,
 		value := asObject(arg(args, 0))
 		if prefix == "update" {
 			value = asObject(d.settingValue(ns, key))
-			mergeObject(value, asObject(arg(args, 0)))
+			patch := asObject(arg(args, 0))
+			if shortcuts, ok := patch["targetShortcuts"]; ok {
+				next := asObject(value["targetShortcuts"])
+				mergeObject(next, asObject(shortcuts))
+				patch["targetShortcuts"] = next
+			}
+			mergeObject(value, patch)
 		}
 		return nil, d.store.Set(ns, key, value)
 	case "createFixedTextPresetItem", "updateFixedTextPresetItem", "deleteFixedTextPresetItem", "moveFixedTextPresetItem":
@@ -157,7 +184,11 @@ func (d *Desktop) syncSendShortcuts() {
 		options := asObject(d.settingValue(ns, lowerFirst(kind)+"PresetOptions"))
 		for _, target := range []string{"friendly", "enemy", "all"} {
 			kind, target := kind, target
-			register(ns+"/preset/"+lowerFirst(kind)+"/"+target, asObject(options["targetShortcuts"])[target], func(platform.ShortcutDetails) { d.emit(ns, "request-preset", kind, target) })
+			register(ns+"/preset/"+lowerFirst(kind)+"/"+target, asObject(options["targetShortcuts"])[target], func(platform.ShortcutDetails) {
+				if _, err := d.sendCall(context.Background(), "send"+kind+"Preset", []any{target}); err != nil {
+					d.emit(ns, "shortcut-error", kind, err.Error())
+				}
+			})
 		}
 	}
 	current := map[string]bool{}

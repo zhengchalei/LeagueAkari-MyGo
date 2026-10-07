@@ -1,3 +1,5 @@
+//go:build !winui_backend
+
 package main
 
 import (
@@ -12,18 +14,19 @@ import (
 	"syscall"
 
 	"github.com/egoist/mygo"
-	"github.com/zhengchalei/LeagueAkari-MyGo/mygo/internal/bridge"
 	selfupdate "github.com/zhengchalei/LeagueAkari-MyGo/mygo/internal/update"
 )
-
-const appVersion = "0.5.6"
 
 //go:embed all:frontend/dist
 var frontend embed.FS
 
-var rendererEvents = mygo.NewEvent[bridge.Event]("akari-event")
-
 func main() {
+	if handled, err := runWinUIBackend(os.Args[1:]); handled {
+		if err != nil {
+			log.Printf("WinUI backend: %v", err)
+		}
+		return
+	}
 	if handled, err := selfupdate.RunHelper(os.Args[1:]); handled {
 		if err != nil {
 			log.Print(err)

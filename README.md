@@ -4,6 +4,10 @@
 
 本项目基于 [LeagueAkari](https://github.com/LeagueAkari/LeagueAkari) 开发，是独立维护的非官方版本。感谢 Hanxven 与 LeagueAkari 贡献者提供原始界面和业务实现，感谢 egoist 与 MyGo 贡献者提供桌面框架。
 
+**MyGo 是主线版本，也是默认启动、构建和发布入口。** 主界面继续使用 Vue / WebView2，常驻 Mini 使用 MyGo 原生 UI。
+
+WinUI 3 作为保留的实验方案，源码、独立打包脚本和验收记录保留在 `winui/`。当前暂停全量迁移，不替代 MyGo 主线；尚未完成全部功能 1:1 验收，也没有验证内存优势。其便携包包含 .NET 与 Windows App SDK 运行时，无需 WebView2。运行方法见 [WinUI 实验说明](winui/README.md)，已有迁移状态见 [验收矩阵](docs/WINUI3_PARITY.md)。下文下载链接与历史内存记录对应 MyGo 发行版。
+
 ## 下载与启动
 
 从 [最新发布](https://github.com/zhengchalei/LeagueAkari-MyGo/releases/latest) 下载 Windows x64 压缩包 `LeagueAkari-MyGo-<版本>-win-x64.zip`，完整解压后运行 **LeagueAkari-MyGo.exe**。这是便携版，运行时不需要 Node.js 或独立本地服务。
@@ -12,6 +16,7 @@
 
 ## 功能
 
+- 本地 Native Mini 预览：Mini 使用 MyGo Go `ui` 原生绘制，不创建 WebView2 页面；保留英雄、增减益、已有皮肤与炫彩、重随机和辅助操作。皮肤列表仅加载可见项，图片缩略缓存限制为 128 项；窗口隐藏时暂停数据刷新。主窗口仍使用 Vue / WebView2。
 - v0.5.6 启动游戏客户端默认使用 Windows UAC 提权授权，仅提升启动器权限，助手保持原有权限；取消授权或启动失败时显示明确提示。
 - v0.5.5 修复进入对局后红方玩家重复显示在蓝队的问题：真实对局名单优先，跨队去重，选人缓存仅补充缺失玩家并按实际队伍归属还原。
 - v0.5.4 将 Mini 改为紧凑常显列表：增益绿色、减益红色，显示相对常规值的变化（例如伤害 −5%、承伤 −10%）。已有皮肤以卡片显示，保留已拥有筛选、炫彩与客户端确认；切换英雄时清除旧皮肤请求结果。辅助窗口首次默认高度为 620，仍优先恢复用户保存的窗口大小。

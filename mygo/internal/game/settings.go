@@ -25,7 +25,7 @@ func (s *Service) config() queryConfig {
 	s.mu.RLock()
 	store, count := s.settings, s.count
 	s.mu.RUnlock()
-	config := queryConfig{enabled: true, queryLobby: true, concurrency: 3, count: count, source: "sgp", tagPreference: "current"}
+	config := queryConfig{enabled: true, queryLobby: true, concurrency: 4, count: count, source: "sgp", tagPreference: "current"}
 	if store == nil {
 		return config
 	}
@@ -37,10 +37,10 @@ func (s *Service) config() queryConfig {
 		config.queryLobby = enabled
 	}
 	if value := client.Number(values["concurrency"]); value > 0 {
-		config.concurrency = min(int(value), 16)
+		config.concurrency = int(value)
 	}
 	if value := client.Number(values["matchHistoryLoadCount"]); value > 0 {
-		config.count = min(int(value), 50)
+		config.count = min(int(value), 200)
 	}
 	config.detailsCount = max(0, min(int(client.Number(values["gameDetailsLoadCount"])), config.count))
 	if store.Get("app-common-main", "preferredLolSource") == "lcu" {

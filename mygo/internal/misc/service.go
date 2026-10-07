@@ -38,7 +38,18 @@ type chatMe struct {
 	Availability string `json:"availability"`
 	Puuid        string `json:"puuid"`
 	SummonerID   int64  `json:"summonerId"`
+	raw          json.RawMessage
 }
+
+func (me *chatMe) UnmarshalJSON(data []byte) error {
+	type presence chatMe
+	if err := json.Unmarshal(data, (*presence)(me)); err != nil {
+		return err
+	}
+	me.raw = append(me.raw[:0], data...)
+	return nil
+}
+
 type chatMessage struct {
 	ID             string `json:"id"`
 	Type           string `json:"type"`
@@ -55,6 +66,7 @@ type Service struct {
 	store                    *settings.Store
 	emit                     bridge.Emitter
 	now                      func() time.Time
+	after                    func(time.Duration, func()) func()
 	operation                sync.Mutex
 	mu                       sync.Mutex
 	active                   context.CancelFunc
@@ -66,10 +78,18 @@ type Service struct {
 	seenMessages             map[string]bool
 	messageOrder             []string
 	initializedConversations map[string]bool
+	connectionSignature      string
+	runtimeContext           context.Context
+	stopLoginTimer           func()
+	loginTimerGeneration     uint64
 }
 
 func New(client JSONClient, store *settings.Store, emit bridge.Emitter) *Service {
 	service := &Service{client: client, store: store, emit: emit, now: time.Now, seenMessages: map[string]bool{}, initializedConversations: map[string]bool{}}
+	service.after = func(delay time.Duration, callback func()) func() {
+		timer := time.AfterFunc(delay, callback)
+		return func() { timer.Stop() }
+	}
 	service.unsubscribe = store.OnChange(func(namespace, key string) {
 		if namespace == settings.MiscNamespace {
 			service.mu.Lock()
@@ -88,11 +108,26 @@ func (service *Service) Close() {
 		service.active()
 	}
 	service.mu.Unlock()
+	service.operation.Lock()
+	service.cancelLoginTimer()
+	service.operation.Unlock()
 	if service.unsubscribe != nil {
 		service.unsubscribe()
 	}
 }
 func (service *Service) Run(ctx context.Context) {
+	if client, ok := service.client.(interface{ State() map[string]any }); ok {
+		service.operation.Lock()
+		service.runtimeContext = ctx
+		service.operation.Unlock()
+		_ = service.observeClientState(ctx, client.State())
+		<-ctx.Done()
+		service.operation.Lock()
+		service.cancelLoginTimer()
+		service.runtimeContext = nil
+		service.operation.Unlock()
+		return
+	}
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
@@ -113,12 +148,19 @@ func (service *Service) State() map[string]any {
 
 func (service *Service) begin(parent context.Context) (context.Context, func()) {
 	service.operation.Lock()
+	release := func() {}
+	if client, ok := service.client.(interface {
+		RequestScope(context.Context) (context.Context, context.CancelFunc)
+	}); ok {
+		parent, release = client.RequestScope(parent)
+	}
 	ctx, cancel := context.WithCancel(parent)
 	service.mu.Lock()
 	service.active = cancel
 	service.mu.Unlock()
 	return ctx, func() {
 		cancel()
+		release()
 		service.mu.Lock()
 		service.active = nil
 		service.mu.Unlock()
@@ -129,6 +171,18 @@ func (service *Service) begin(parent context.Context) (context.Context, func()) 
 func (service *Service) Tick(parent context.Context) error {
 	ctx, finish := service.begin(parent)
 	defer finish()
+	if client, ok := service.client.(interface{ GameplayState() map[string]any }); ok {
+		state, _ := client.GameplayState()["state"].(map[string]any)
+		if state["connectionState"] != "connected" {
+			service.reset()
+			return nil
+		}
+		auth, _ := json.Marshal(state["auth"])
+		if service.connectionSignature != string(auth) {
+			service.reset()
+			service.connectionSignature = string(auth)
+		}
+	}
 	var config Config
 	if err := service.store.Decode(settings.MiscNamespace, &config); err != nil {
 		return err
@@ -155,6 +209,7 @@ func (service *Service) Tick(parent context.Context) error {
 }
 
 func (service *Service) reset() {
+	service.cancelLoginTimer()
 	service.previousAvailability = ""
 	service.meSignature = ""
 	service.loginDone = false
@@ -162,6 +217,7 @@ func (service *Service) reset() {
 	service.initializedConversations = map[string]bool{}
 	service.seenMessages = map[string]bool{}
 	service.messageOrder = nil
+	service.connectionSignature = ""
 }
 
 func (service *Service) applyPresence(ctx context.Context, me chatMe, config Config) error {
@@ -173,14 +229,27 @@ func (service *Service) applyPresence(ctx context.Context, me chatMe, config Con
 		}
 	}
 	data, _ := json.Marshal(me)
+	if len(me.raw) > 0 {
+		data = me.raw
+	}
 	signature := string(data)
 	if !service.loginDone && signature != service.meSignature {
 		service.meSignature = signature
 		service.settledAt = service.now().Add(2 * time.Second)
+		if service.runtimeContext != nil {
+			service.scheduleLoginAutomation()
+		}
+	}
+	if service.runtimeContext != nil {
+		return nil
 	}
 	if service.loginDone || service.settledAt.IsZero() || service.now().Before(service.settledAt) {
 		return nil
 	}
+	return service.applyLoginAutomation(ctx, config)
+}
+
+func (service *Service) applyLoginAutomation(ctx context.Context, config Config) error {
 	service.loginDone = true
 	var failures []error
 	if config.AutoSetStatusMessageEnabled {
@@ -197,8 +266,16 @@ func (service *Service) applyPresence(ctx context.Context, me chatMe, config Con
 }
 
 func (service *Service) Call(parent context.Context, name string, args []any) (any, error) {
+	// A manual apply interrupts the pending login action, including a write
+	// already awaiting the client, before taking ownership of the operation.
+	service.mu.Lock()
+	if service.active != nil {
+		service.active()
+	}
+	service.mu.Unlock()
 	ctx, finish := service.begin(parent)
 	defer finish()
+	service.cancelLoginTimer()
 	service.loginDone = true
 	var config Config
 	if err := service.store.Decode(settings.MiscNamespace, &config); err != nil {
@@ -383,6 +460,14 @@ func decode(value, target any) error {
 
 // HandleEvent can consume a generic emitter packet when the host forwards an LCU event.
 func (service *Service) HandleEvent(ctx context.Context, namespace, name string, args ...any) error {
+	if namespace == "mobx-utils-main" && len(args) > 0 &&
+		(name == "update-state-prop/league-client-main:chat" && args[0] == "me" ||
+			name == "update-state-prop/league-client-main:state" && (args[0] == "connectionState" || args[0] == "auth")) {
+		if client, ok := service.client.(interface{ State() map[string]any }); ok {
+			return service.observeClientState(ctx, client.State())
+		}
+		return nil
+	}
 	if namespace != "league-client-main" || name != "lcu-event" || len(args) < 3 {
 		return nil
 	}
